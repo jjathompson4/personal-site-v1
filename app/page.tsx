@@ -113,7 +113,7 @@ export default async function HomePage({
     return (
         <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex-1 py-12 relative">
+            <main className="flex-1 py-8 md:py-12 relative">
                 <div className="w-full max-w-4xl mx-auto px-4 space-y-12">
 
                     {/* Compact Hero */}
@@ -122,8 +122,8 @@ export default async function HomePage({
                         <p className="text-muted-foreground">Lighting Design & Software Craft</p>
                     </div>
 
-                    <div className="sticky top-16 z-30 pt-2 pb-6 bg-background/5 inline-block w-full">
-                        <div className="backdrop-blur-md bg-background/50 rounded-2xl p-4 border shadow-sm">
+                    <div className="sticky top-16 z-30 pt-0 pb-4 md:pt-2 md:pb-6 bg-background/5 inline-block w-full">
+                        <div className="backdrop-blur-md bg-background/50 rounded-2xl p-3 md:p-4 border shadow-sm">
                             <Suspense fallback={<div className="h-40 animate-pulse bg-muted rounded-xl" />}>
                                 <StreamFilters categories={activeModules} />
                             </Suspense>

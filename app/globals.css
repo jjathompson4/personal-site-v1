@@ -369,6 +369,15 @@
     background-color: var(--glass-bg);
     border-color: var(--glass-border);
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @property --card-foreground {
