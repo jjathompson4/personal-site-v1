@@ -1,5 +1,9 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { isAdminUser } from './shared'
+
+export { ADMIN_EMAILS } from './shared'
+export { isAdminUser }
 
 export async function getSession() {
     const supabase = await createServerClient()
@@ -10,11 +14,13 @@ export async function getSession() {
 }
 
 export async function requireAuth() {
-    const session = await getSession()
-    if (!session) {
+    const supabase = await createServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user || !isAdminUser(user)) {
         redirect('/login')
     }
-    return session
+    return user
 }
 
 export async function getUser() {

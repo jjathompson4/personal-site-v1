@@ -8,11 +8,7 @@ export async function Header() {
 
     return (
         <header
-            className="sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60"
-            style={{
-                backgroundColor: 'var(--glass-bg)',
-                borderColor: 'var(--glass-border)'
-            }}
+            className="sticky top-0 z-50 w-full border-b backdrop-blur glass-panel supports-[backdrop-filter]:bg-background/60"
         >
             <div className="w-full max-w-screen-xl mx-auto px-4 flex h-16 items-center justify-between">
                 <Link href="/" className="flex items-center space-x-2">

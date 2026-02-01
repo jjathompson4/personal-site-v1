@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import matter from 'gray-matter'
 
-export interface BlogPost {
+export interface Article {
     slug: string
     title: string
     date: string
@@ -10,7 +10,7 @@ export interface BlogPost {
     [key: string]: any
 }
 
-export async function getPostBySlug(slug: string, moduleTag: string): Promise<BlogPost | null> {
+export async function getArticleBySlug(slug: string, moduleTag: string): Promise<Article | null> {
     const supabase = createClient()
 
     // 1. Find the file in the Media table

@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Layout } from 'lucide-react'
 import { SolarGradient } from '@/components/layout/SolarGradient'
-import { SearchInput } from '@/components/ui/search-input'
+import { SearchInput } from '@/components/shared/SearchInput'
 
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -17,9 +17,10 @@ export const revalidate = 60 // Revalidate every minute
 export default async function PhotographyPage({
     searchParams,
 }: {
-    searchParams: { q?: string }
+    searchParams: Promise<{ sort?: string, q?: string }>
 }) {
-    const query = searchParams?.q
+    const { sort: sortParam, q: query } = await searchParams
+    const sort = sortParam as 'asc' | 'desc' | undefined
 
     const [galleries, recentPhotos, moduleData] = await Promise.all([
         getPublicGalleries(query),

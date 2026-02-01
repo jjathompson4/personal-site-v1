@@ -1,16 +1,17 @@
-import { HybridModulePage } from '@/components/modules/HybridModulePage'
+import { CategorizedStreamPage } from '@/components/modules/CategorizedStreamPage'
 import { BrainCircuit } from 'lucide-react'
 
 
 
-export default function ThoughtsAecPage({
+export default async function ThoughtsAecPage({
     searchParams,
 }: {
-    searchParams: { sort?: string }
+    searchParams: Promise<{ sort?: string }>
 }) {
-    const sort = searchParams?.sort as 'asc' | 'desc' | undefined
+    const { sort: sortParam } = await searchParams
+    const sort = sortParam as 'asc' | 'desc' | undefined
     return (
-        <HybridModulePage
+        <CategorizedStreamPage
             moduleTag="thoughts-aec"
             title="Thoughts on AEC"
             subtitle="Writing and notes on Architecture, Engineering, and Construction technology."

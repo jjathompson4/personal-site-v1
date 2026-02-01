@@ -1,16 +1,17 @@
-import { HybridModulePage } from '@/components/modules/HybridModulePage'
+import { CategorizedStreamPage } from '@/components/modules/CategorizedStreamPage'
 import { Sparkles } from 'lucide-react'
 
 
 
-export default function ThoughtsPersonalPage({
+export default async function ThoughtsPersonalPage({
     searchParams,
 }: {
-    searchParams: { sort?: string }
+    searchParams: Promise<{ sort?: string }>
 }) {
-    const sort = searchParams?.sort as 'asc' | 'desc' | undefined
+    const { sort: sortParam } = await searchParams
+    const sort = sortParam as 'asc' | 'desc' | undefined
     return (
-        <HybridModulePage
+        <CategorizedStreamPage
             moduleTag="thoughts-personal"
             title="Personal Thoughts"
             subtitle="Notes, essays, and ideas from my personal life."

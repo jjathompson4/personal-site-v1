@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Post, PostFormData } from '@/types/post'
+import { Article, ArticleFormData } from '@/types/article'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,15 +13,15 @@ import { MediaUploader } from '@/components/admin/MediaUploader'
 import { Loader2, X } from 'lucide-react'
 import Image from 'next/image'
 
-interface PostFormProps {
-    initialData?: Post
+interface ArticleEditorProps {
+    initialData?: Article
     mode: 'create' | 'edit'
 }
 
-export function PostForm({ initialData, mode }: PostFormProps) {
+export function ArticleEditor({ initialData, mode }: ArticleEditorProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState<PostFormData>({
+    const [formData, setFormData] = useState<ArticleFormData>({
         title: initialData?.title || '',
         slug: initialData?.slug || '',
         excerpt: initialData?.excerpt || '',
@@ -45,7 +45,7 @@ export function PostForm({ initialData, mode }: PostFormProps) {
         }
 
         try {
-            const url = mode === 'create' ? '/api/blog' : `/api/blog/${initialData?.id}`
+            const url = mode === 'create' ? '/api/articles' : `/api/articles/${initialData?.id}`
             const method = mode === 'create' ? 'POST' : 'PATCH'
 
             const res = await fetch(url, {
@@ -54,13 +54,13 @@ export function PostForm({ initialData, mode }: PostFormProps) {
                 body: JSON.stringify(payload),
             })
 
-            if (!res.ok) throw new Error('Failed to save post')
+            if (!res.ok) throw new Error('Failed to save article')
 
-            router.push('/admin/blog')
+            router.push('/admin/articles')
             router.refresh()
         } catch (error) {
-            console.error('Error saving post:', error)
-            alert('Failed to save post')
+            console.error('Error saving article:', error)
+            alert('Failed to save article')
         } finally {
             setLoading(false)
         }
@@ -77,7 +77,7 @@ export function PostForm({ initialData, mode }: PostFormProps) {
                             id="title"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            placeholder="Post Title"
+                            placeholder="Article Title"
                             required
                         />
                     </div>
@@ -125,31 +125,31 @@ export function PostForm({ initialData, mode }: PostFormProps) {
                             <div className="grid grid-cols-2 gap-2">
                                 <Button
                                     type="button"
-                                    variant={tagsInput.includes('thoughts') ? 'default' : 'outline'}
+                                    variant={tagsInput.includes('thoughts-personal') ? 'default' : 'outline'}
                                     onClick={() => {
-                                        setTagsInput('thoughts')
+                                        setTagsInput('thoughts-personal')
                                     }}
                                     className="w-full"
                                 >
-                                    Thoughts (Personal)
+                                    Personal Thoughts
                                 </Button>
                                 <Button
                                     type="button"
-                                    variant={tagsInput.includes('aec') ? 'default' : 'outline'}
+                                    variant={tagsInput.includes('thoughts-aec') ? 'default' : 'outline'}
                                     onClick={() => {
-                                        setTagsInput('aec')
+                                        setTagsInput('thoughts-aec')
                                     }}
                                     className="w-full"
                                 >
-                                    AEC (Professional)
+                                    Thoughts (AEC)
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">Select where this post belongs.</p>
+                            <p className="text-xs text-muted-foreground">Select where this article belongs.</p>
                         </div>
 
                         <Button type="submit" className="w-full" disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {mode === 'create' ? 'Create Post' : 'Save Changes'}
+                            {mode === 'create' ? 'Create Article' : 'Save Changes'}
                         </Button>
                     </div>
 
@@ -175,10 +175,10 @@ export function PostForm({ initialData, mode }: PostFormProps) {
                             </div>
                         ) : (
                             <MediaUploader
-                                bucket="projects" // Reuse projects or maybe photography bucket? Or new 'blog'?
+                                bucket="projects" // Reuse projects or maybe photography bucket? Or new 'article'?
                                 // Let's use 'projects' bucket for now as it's general purpose 'misc' or stick to 'photography'
                                 // Actually, I should probably use 'photography' as general media or 'projects'.
-                                // Plan didn't specify blog bucket. Let's use 'projects' bucket for now as it makes semantic sense for "work".
+                                // Plan didn't specify article bucket. Let's use 'projects' bucket for now as it makes semantic sense for "work".
                                 // Or better, just 'photography' as it's likely just images.
                                 // Let's use 'photography'.
                                 onUploadComplete={(media) => setFormData({ ...formData, cover_image: media.file_url })}

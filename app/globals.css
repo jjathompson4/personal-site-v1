@@ -4,6 +4,127 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Houdini properties for smooth gradient interpolation - must be registered early */
+@property --solar-stop-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(92% 0.02 240);
+}
+
+@property --solar-stop-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(93% 0.01 250);
+}
+
+@property --solar-stop-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(95% 0.02 70);
+}
+
+@property --solar-stop-4 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(96% 0.03 50);
+}
+
+@property --orb-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(85% 0.1 60);
+}
+
+@property --orb-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(85% 0.1 200);
+}
+
+@property --orb-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(85% 0.1 300);
+}
+
+@property --orb-4 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(85% 0.1 85);
+}
+
+@property --orb-opacity {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.6;
+}
+
+@property --orb-opacity-accent {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.5;
+}
+
+@property --background {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(98% 0.01 45);
+}
+
+@property --foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(25% 0.02 35);
+}
+
+@property --card {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(100% 0 0);
+}
+
+@property --border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(90% 0.01 45);
+}
+
+@property --glass-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(255, 255, 255, 0.4);
+}
+
+@property --glass-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgba(0, 0, 0, 0.05);
+}
+
+@property --popover {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(100% 0 0);
+}
+
+@property --primary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(55% 0.15 40);
+}
+
+@property --secondary {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(95% 0.01 210);
+}
+
+@property --muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(96% 0.01 45);
+}
+
 @property --accent {
   syntax: '<color>';
   inherits: true;
@@ -243,45 +364,77 @@
   .ease-gentle {
     transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
   }
+
+  .glass-panel {
+    background-color: var(--glass-bg);
+    border-color: var(--glass-border);
+  }
 }
 
+@property --card-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(25% 0.02 35);
+}
 
+@property --popover-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(25% 0.02 35);
+}
+
+@property --primary-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(100% 0 0);
+}
+
+@property --secondary-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(25% 0.02 35);
+}
+
+@property --muted-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(45% 0.02 30);
+}
+
+@property --accent-foreground {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(100% 0 0);
+}
+
+@property --destructive {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(60% 0.20 25);
+}
+
+@property --border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(90% 0.01 45);
+}
+
+@property --input {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(95% 0.01 45);
+}
+
+@property --ring {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: oklch(55% 0.15 40);
+}
 
 /* Centralized transitions for solar stops and theme variables to ensure synchronization */
 :root,
 body {
-  transition: --solar-stop-1 1s ease-in-out,
-    --solar-stop-2 1s ease-in-out,
-    --solar-stop-3 1s ease-in-out,
-    --solar-stop-4 1s ease-in-out,
-    --orb-1 1s ease-in-out,
-    --orb-2 1s ease-in-out,
-    --orb-3 1s ease-in-out,
-    --orb-4 1s ease-in-out,
-    --orb-opacity 1s ease-in-out,
-    --orb-opacity-accent 1s ease-in-out,
-    --background 1s ease-in-out,
-    --foreground 1s ease-in-out,
-    background-color 1s ease-in-out,
-    color 1s ease-in-out,
-    --card 1s ease-in-out,
-    --card-foreground 1s ease-in-out,
-    --popover 1s ease-in-out,
-    --popover-foreground 1s ease-in-out,
-    --primary 1s ease-in-out,
-    --primary-foreground 1s ease-in-out,
-    --secondary 1s ease-in-out,
-    --secondary-foreground 1s ease-in-out,
-    --muted 1s ease-in-out,
-    --muted-foreground 1s ease-in-out,
-    --accent 1s ease-in-out,
-    --accent-foreground 1s ease-in-out,
-    --destructive 1s ease-in-out,
-    --border 1s ease-in-out,
-    --input 1s ease-in-out,
-    --ring 1s ease-in-out,
-    --glass-bg 1s ease-in-out,
-    --glass-border 1s ease-in-out;
+  /* instant switching to prevent flicker/ghosting */
 }
 
 @media (prefers-reduced-motion: reduce) {

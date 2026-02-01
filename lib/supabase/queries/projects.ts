@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 import { Project } from '@/types/project'
 
 export async function getProjects(search?: string) {
-    const supabase = createClient()
+    const supabase = await createServerClient()
     let query = supabase
         .from('projects')
         .select('*')
@@ -15,7 +15,7 @@ export async function getProjects(search?: string) {
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching projects:', error)
+        console.error('Error fetching projects:', error.message, error.details)
         return []
     }
 
@@ -23,7 +23,7 @@ export async function getProjects(search?: string) {
 }
 
 export async function getProjectBySlug(slug: string) {
-    const supabase = createClient()
+    const supabase = await createServerClient()
     const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -31,7 +31,7 @@ export async function getProjectBySlug(slug: string) {
         .single()
 
     if (error) {
-        console.error('Error fetching project:', error)
+        console.error('Error fetching project:', error.message, error.details)
         return null
     }
 
@@ -39,7 +39,7 @@ export async function getProjectBySlug(slug: string) {
 }
 
 export async function getRecentProjects(limit = 3) {
-    const supabase = createClient()
+    const supabase = await createServerClient()
     const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -48,7 +48,7 @@ export async function getRecentProjects(limit = 3) {
         .limit(limit)
 
     if (error) {
-        console.error('Error fetching recent projects:', error)
+        console.error('Error fetching recent projects:', error.message, error.details)
         return []
     }
 

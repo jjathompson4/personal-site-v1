@@ -46,7 +46,7 @@ import {
     sortableKeyboardCoordinates,
     rectSortingStrategy
 } from '@dnd-kit/sortable'
-import { SortableMediaItem } from '@/components/admin/SortableMediaItem'
+import { SortableMediaItem } from '@/components/admin/sortable/SortableMediaItem'
 
 export default function MediaLibraryPage() {
     // --- State ---

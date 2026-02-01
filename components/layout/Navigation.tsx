@@ -1,13 +1,15 @@
-
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, ChevronDown } from 'lucide-react'
-import { useState } from 'react'
+import { Menu, ChevronDown, Edit3, Plus, FileText, Briefcase, Image as ImageIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { Module } from '@/types/module'
+import { useAdmin } from '@/components/providers/AdminProvider'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import {
     Sheet,
     SheetContent,
@@ -27,11 +29,21 @@ interface NavigationProps {
 export function Navigation({ modules }: NavigationProps) {
     const pathname = usePathname()
     const [open, setOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    const { isAdmin, isEditMode, setIsEditMode } = useAdmin()
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Filter enabled modules
     const activeModules = modules.filter(m => m.enabled)
-    const professionalRoutes = activeModules.filter(m => m.category === 'work').map(m => ({ label: m.name, href: `/${m.slug}` }))
-    const personalRoutes = activeModules.filter(m => m.category === 'personal').map(m => ({ label: m.name, href: `/${m.slug}` }))
+    const professionalRoutes = activeModules.filter(m => m.category === 'work').map(m => ({ label: m.name, href: `/?tab=work&tag=${m.slug}` }))
+    const personalRoutes = activeModules.filter(m => m.category === 'personal').map(m => ({ label: m.name, href: `/?tab=personal&tag=${m.slug}` }))
+
+    if (!mounted) {
+        return <div className="hidden md:flex items-center gap-6 h-10 w-48" /> // placeholder
+    }
 
     return (
         <>
@@ -83,6 +95,55 @@ export function Navigation({ modules }: NavigationProps) {
                     </DropdownMenu>
                 )}
             </nav>
+
+            <div className="flex items-center gap-4">
+                {isAdmin && (
+                    <div className="flex items-center gap-3">
+                        {isEditMode && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
+                                        <Plus className="h-4 w-4" /> Create
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/admin/articles/new" className="cursor-pointer flex items-center">
+                                            <FileText className="mr-2 h-4 w-4 text-orange-500" />
+                                            <span>New Article</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/admin/projects/new" className="cursor-pointer flex items-center">
+                                            <Briefcase className="mr-2 h-4 w-4 text-blue-500" />
+                                            <span>New Project</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/admin/media" className="cursor-pointer flex items-center">
+                                            <ImageIcon className="mr-2 h-4 w-4 text-green-500" />
+                                            <span>Upload Media</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
+                            <Edit3 className="h-4 w-4 text-primary" />
+                            <Label htmlFor="edit-mode" className="text-xs font-semibold text-primary cursor-pointer select-none">
+                                EDIT
+                            </Label>
+                            <Switch
+                                id="edit-mode"
+                                checked={isEditMode}
+                                onCheckedChange={setIsEditMode}
+                                className="scale-75 data-[state=checked]:bg-primary"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Mobile Navigation */}
             <Sheet open={open} onOpenChange={setOpen}>

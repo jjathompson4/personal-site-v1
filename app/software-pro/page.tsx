@@ -1,16 +1,17 @@
-import { HybridModulePage } from '@/components/modules/HybridModulePage'
+import { CategorizedStreamPage } from '@/components/modules/CategorizedStreamPage'
 import { Code2 } from 'lucide-react'
 
 
 
-export default function SoftwareProPage({
+export default async function SoftwareProPage({
     searchParams,
 }: {
-    searchParams: { sort?: string }
+    searchParams: Promise<{ sort?: string }>
 }) {
-    const sort = searchParams?.sort as 'asc' | 'desc' | undefined
+    const { sort: sortParam } = await searchParams
+    const sort = sortParam as 'asc' | 'desc' | undefined
     return (
-        <HybridModulePage
+        <CategorizedStreamPage
             moduleTag="software-pro"
             title="Software Engineering"
             subtitle="Professional software projects and system architecture."

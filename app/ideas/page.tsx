@@ -1,16 +1,17 @@
-import { HybridModulePage } from '@/components/modules/HybridModulePage'
+import { CategorizedStreamPage } from '@/components/modules/CategorizedStreamPage'
 import { Lightbulb } from 'lucide-react'
 
 
 
-export default function IdeasPage({
+export default async function IdeasPage({
     searchParams,
 }: {
-    searchParams: { sort?: string }
+    searchParams: Promise<{ sort?: string }>
 }) {
-    const sort = searchParams?.sort as 'asc' | 'desc' | undefined
+    const { sort: sortParam } = await searchParams
+    const sort = sortParam as 'asc' | 'desc' | undefined
     return (
-        <HybridModulePage
+        <CategorizedStreamPage
             moduleTag="ideas"
             title="Ideas"
             subtitle="Sketches, musings, and personal creative explorations."

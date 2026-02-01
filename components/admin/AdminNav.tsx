@@ -22,16 +22,16 @@ const routes = [
         icon: FolderOpen, // Changed icon to represent unified content
         href: '/admin/media',
     },
-    // {
-    //     label: 'Thoughts',
-    //     icon: FileText,
-    //     href: '/admin/blog',
-    // },
-    // {
-    //     label: 'Projects',
-    //     icon: FolderOpen,
-    //     href: '/admin/projects',
-    // },
+    {
+        label: 'Articles',
+        icon: FileText,
+        href: '/admin/articles',
+    },
+    {
+        label: 'Projects',
+        icon: FolderOpen,
+        href: '/admin/projects',
+    },
     {
         label: 'Settings',
         icon: Settings,

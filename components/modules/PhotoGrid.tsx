@@ -4,7 +4,7 @@
 import { Media } from '@/types/media'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -105,7 +105,8 @@ export function PhotoGrid({ photos, className }: PhotoGridProps) {
             </div>
 
             <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
-                <DialogContent className="max-w-none w-screen h-screen p-0 border-none bg-black/95 shadow-none focus:outline-none overflow-hidden block sm:max-w-none">
+                <DialogContent className="max-w-none w-screen h-screen p-0 border-none bg-black/95 shadow-none focus:outline-none overflow-hidden block sm:max-w-none" showCloseButton={false}>
+                    <DialogTitle className="sr-only">Photo Gallery View</DialogTitle>
                     {/* Full Screen Image Container */}
                     <div className="absolute inset-0 w-full h-full">
                         {selectedPhoto && (

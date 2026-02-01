@@ -1,27 +1,28 @@
 import { Suspense } from 'react'
-import { getPosts } from '@/lib/supabase/queries/blog'
+import { getArticles } from '@/lib/supabase/queries/articles'
 import { getModuleBySlug } from '@/lib/supabase/queries/modules'
-import { BlogCard } from '@/components/modules/BlogCard'
+import { ArticleCard } from '@/components/modules/ArticleCard'
+import { ArticleSortableList } from '@/components/admin/sortable/ArticleSortableList'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { SearchInput } from '@/components/ui/search-input'
+import { SearchInput } from '@/components/shared/SearchInput'
 import { SolarGradient } from '@/components/layout/SolarGradient'
 
 export const revalidate = 60
 
-export default async function BlogPage({
+export default async function ArticlesPage({
     searchParams,
 }: {
-    searchParams: { q?: string }
+    searchParams: Promise<{ q?: string }>
 }) {
-    const query = searchParams?.q
-    const [posts, moduleData] = await Promise.all([
-        getPosts(query),
-        getModuleBySlug('blog')
+    const { q: query } = await searchParams
+    const [articles, moduleData] = await Promise.all([
+        getArticles(undefined, query),
+        getModuleBySlug('articles')
     ])
 
-    const title = moduleData?.name || "Blog"
-    const description = moduleData?.description || "Thoughts, tutorials, and deep dives."
+    const title = moduleData?.name || "Articles"
+    const description = moduleData?.description || "Long-form writing, tutorials, and deep dives."
 
     return (
         <SolarGradient>
@@ -36,19 +37,17 @@ export default async function BlogPage({
                                 {description}
                             </p>
                             <Suspense>
-                                <SearchInput placeholder="Search posts..." />
+                                <SearchInput placeholder="Search articles..." />
                             </Suspense>
                         </div>
 
                         {/* List */}
-                        <div className="space-y-6">
-                            {posts.length > 0 ? (
-                                posts.map((post) => (
-                                    <BlogCard key={post.id} post={post} />
-                                ))
+                        <div>
+                            {articles.length > 0 ? (
+                                <ArticleSortableList initialArticles={articles} />
                             ) : (
                                 <div className="py-24 text-center border rounded-2xl bg-background/50 border-dashed">
-                                    <h3 className="text-lg font-semibold">No posts found</h3>
+                                    <h3 className="text-lg font-semibold">No articles found</h3>
                                     <p className="text-muted-foreground">Try adjusting your search terms.</p>
                                 </div>
                             )}

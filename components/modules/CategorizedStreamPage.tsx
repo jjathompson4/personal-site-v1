@@ -7,10 +7,12 @@ import matter from 'gray-matter'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
 import { getModuleBySlug } from '@/lib/supabase/queries/modules'
+import { getArticles } from '@/lib/supabase/queries/articles'
 import { Suspense } from 'react'
-import { SearchInput } from '@/components/ui/search-input'
+import { SearchInput } from '@/components/shared/SearchInput'
+import { ModuleAdminActions } from '@/components/admin/ModuleAdminActions'
 
-interface HybridModulePageProps {
+interface CategorizedStreamPageProps {
     moduleTag: string
     title?: string // Made optional as fallback
     subtitle?: string // Made optional as fallback
@@ -56,7 +58,7 @@ async function fetchMarkdownContent(url: string) {
     }
 }
 
-export async function HybridModulePage({
+export async function CategorizedStreamPage({
     moduleTag,
     title: fallbackTitle,
     subtitle: fallbackSubtitle,
@@ -64,10 +66,11 @@ export async function HybridModulePage({
     emptyMessage = "No content yet.",
     sortOrder,
     searchQuery
-}: HybridModulePageProps) {
-    const [allMedia, moduleData] = await Promise.all([
+}: CategorizedStreamPageProps) {
+    const [allMedia, moduleData, articles] = await Promise.all([
         getModuleMedia(moduleTag, sortOrder),
-        getModuleBySlug(moduleTag)
+        getModuleBySlug(moduleTag),
+        getArticles(moduleTag) // Fetch articles tagged with this module's slug
     ])
 
     // Use DB data if available, otherwise fallback to props
@@ -83,8 +86,8 @@ export async function HybridModulePage({
         textContents.set(file.id, content)
     }))
 
-    // 2. Build the Stream
-    let stream = buildStream(allMedia, textContents)
+    // 2. Build the Stream (Merging media and articles)
+    let stream = buildStream(allMedia, textContents, articles)
 
     // 3. Apply Search Filter
     if (searchQuery) {
@@ -117,12 +120,15 @@ export async function HybridModulePage({
                             <Suspense>
                                 <SearchInput placeholder={`Search ${displayTitle}...`} />
                             </Suspense>
+
+                            <ModuleAdminActions
+                                moduleSlug={moduleTag}
+                                moduleName={displayTitle}
+                            />
                         </div>
 
                         {/* Stream Content */}
                         <div className="max-w-4xl mx-auto w-full">
-
-
                             {stream.length > 0 ? (
                                 <ContentStream stream={stream} />
                             ) : (

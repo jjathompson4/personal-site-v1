@@ -1,4 +1,4 @@
-export interface Post {
+export interface Article {
     id: string
     created_at: string
     updated_at: string
@@ -12,7 +12,7 @@ export interface Post {
     tags: string[]
 }
 
-export interface PostFormData {
+export interface ArticleFormData {
     title: string
     slug: string
     excerpt: string

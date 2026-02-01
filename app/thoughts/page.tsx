@@ -1,6 +1,6 @@
 
-import { getPosts } from '@/lib/supabase/queries/blog'
-import { BlogCard } from '@/components/modules/BlogCard'
+import { getArticles } from '@/lib/supabase/queries/articles'
+import { ArticleCard } from '@/components/modules/ArticleCard'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { SolarGradient } from '@/components/layout/SolarGradient'
@@ -10,7 +10,7 @@ export const revalidate = 60
 
 export default async function ThoughtsPage() {
     // Filter for 'thoughts' tag (formerly ideas)
-    const posts = await getPosts('thoughts')
+    const posts = await getArticles('thoughts')
 
     return (
         <SolarGradient>
@@ -30,7 +30,7 @@ export default async function ThoughtsPage() {
                         <div className="space-y-6">
                             {posts.length > 0 ? (
                                 posts.map((post) => (
-                                    <BlogCard key={post.id} post={post} />
+                                    <ArticleCard key={post.id} post={post} />
                                 ))
                             ) : (
                                 <div className="py-24 text-center border rounded-2xl bg-background/50 border-dashed">

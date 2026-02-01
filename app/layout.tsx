@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AdminProvider } from "@/components/providers/AdminProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { SolarGradient } from "@/components/layout/SolarGradient";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -26,14 +28,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+      <body
+        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
         >
-          {children}
-          <Toaster />
+          <AdminProvider>
+            <SolarGradient>
+              {children}
+            </SolarGradient>
+            <Toaster />
+          </AdminProvider>
         </ThemeProvider>
       </body>
     </html>

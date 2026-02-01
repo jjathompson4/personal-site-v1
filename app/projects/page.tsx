@@ -2,6 +2,7 @@
 import { getProjects } from '@/lib/supabase/queries/projects'
 import { getModuleBySlug } from '@/lib/supabase/queries/modules'
 import { ProjectCard } from '@/components/modules/ProjectCard'
+import { ProjectSortableList } from '@/components/admin/sortable/ProjectSortableList'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { SolarGradient } from '@/components/layout/SolarGradient'
@@ -33,11 +34,7 @@ export default async function ProjectsPage() {
                         </div>
 
                         {projects.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {projects.map((project) => (
-                                    <ProjectCard key={project.id} project={project} />
-                                ))}
-                            </div>
+                            <ProjectSortableList initialProjects={projects} />
                         ) : (
                             <div className="py-24 text-center">
                                 <FolderOpen className="mx-auto h-12 w-12 text-muted-foreground/30" />

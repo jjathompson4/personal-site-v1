@@ -1,14 +1,12 @@
+import { createServerClient } from '@/lib/supabase/server'
+import { Article } from '@/types/article'
 
-import { createClient } from '@/lib/supabase/client'
-import { Post } from '@/types/post'
-
-export async function getPosts(tag?: string, search?: string) {
-    const supabase = createClient()
+export async function getArticles(tag?: string, search?: string) {
+    const supabase = await createServerClient()
 
     let query = supabase
         .from('posts')
         .select('*')
-        .eq('published', true)
         .order('published_at', { ascending: false })
         .order('created_at', { ascending: false })
 
@@ -24,32 +22,32 @@ export async function getPosts(tag?: string, search?: string) {
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching posts:', error)
+        console.error('Error fetching articles:', error.message, error.details)
         return []
     }
 
-    return data as Post[]
+    return data as Article[]
 }
 
-export async function getPostBySlug(slug: string) {
-    const supabase = createClient()
+export async function getArticleBySlug(slug: string) {
+    const supabase = await createServerClient()
     const { data, error } = await supabase
         .from('posts')
         .select('*')
         .eq('slug', slug)
-        .eq('published', true) // Security: only allow published posts by slug for public
+        .eq('published', true) // Security: only allow published articles by slug for public
         .single()
 
     if (error) {
-        console.error('Error fetching post:', error)
+        console.error('Error fetching article:', error.message, error.details)
         return null
     }
 
-    return data as Post
+    return data as Article
 }
 
-export async function getRecentPosts(limit = 3) {
-    const supabase = createClient()
+export async function getRecentArticles(limit = 3) {
+    const supabase = await createServerClient()
     const { data, error } = await supabase
         .from('posts')
         .select('*')
@@ -58,9 +56,9 @@ export async function getRecentPosts(limit = 3) {
         .limit(limit)
 
     if (error) {
-        console.error('Error fetching recent posts:', error)
+        console.error('Error fetching recent articles:', error.message, error.details)
         return []
     }
 
-    return data as Post[]
+    return data as Article[]
 }

@@ -1,5 +1,5 @@
-import { getPostBySlug } from '@/lib/markdown'
-import { MarkdownPost } from '@/components/modules/MarkdownPost'
+import { getArticleBySlug } from '@/lib/markdown'
+import { JournalUpdate } from '@/components/modules/JournalUpdate'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { SolarGradient } from '@/components/layout/SolarGradient'
@@ -12,9 +12,9 @@ interface PageProps {
     params: Promise<{ slug: string }>
 }
 
-export default async function SharedThoughtsPage({ params }: PageProps) {
+export default async function ArticlePage({ params }: PageProps) {
     const { slug } = await params
-    const post = await getPostBySlug(slug, 'thoughts-personal')
+    const post = await getArticleBySlug(slug, 'thoughts-personal')
 
     if (!post) {
         notFound()
@@ -36,7 +36,7 @@ export default async function SharedThoughtsPage({ params }: PageProps) {
                                 </p>
                             </header>
 
-                            <MarkdownPost content={post.content} />
+                            <JournalUpdate content={post.content} />
                         </div>
                     </div>
                 </main>

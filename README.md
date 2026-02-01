@@ -13,11 +13,11 @@ A dynamic, portfolio and content stream application built with the latest web te
 
 ## ✨ Key Features
 
+-   **Masked Mesh Gradient**: An immersive background system utilizing CSS Houdini for smooth theme transitions and vibrant edge-lighting effects that respond to scroll and mouse movement.
 -   **Hybrid Content Stream**: Automatically groups consecutive photos into grids (2x2, masonry) while interspersing markdown text posts.
--   **Dynamic Solar Gradients**: An immersive background system that shifts hue and horizon position based on scroll depth, creating a "sunrise/sunset" effect.
--   **Module System**: A dynamic routing system where page titles, descriptions, and content streams are controlled via the Admin Panel and Supabase database.
--   **Admin Dashboard**: secure route (`/admin`) to manage modules, upload media, and configure site settings.
--   **Theme System**: Dark/Light mode support with synchronized Houdini CSS variable transitions.
+-   **Adaptive Navigation**: Page titles, descriptions, and content streams are controlled via the Admin Panel and Supabase database.
+-   **Admin Dashboard**: Secure route (`/admin`) to manage modules, upload media, and configure site settings.
+-   **Smooth Theme System**: Synchronized 1-second transitions for all UI elements and background stops using registered CSS Houdini properties.
 
 ## 🛠️ Getting Started
 
@@ -58,7 +58,7 @@ A dynamic, portfolio and content stream application built with the latest web te
 ## 🗄️ Database & Migrations
 
 The project uses Supabase for data persistence.
--   **Modules Table**: Controls the site sections (Architecture, Photography, Blog, etc.).
+-   **Modules Table**: Controls the site sections (Architecture, Photography, Articles, etc.).
 -   **Media Table**: Stores references to images and text files.
 -   **Storage**: Uses Supabase Storage buckets for assets.
 
@@ -85,6 +85,14 @@ npm run build
 -   `lib/`: Utility functions and Supabase clients.
     -   `stream.ts`: Core logic for building the mixed media content stream.
 -   `types/`: TypeScript definitions.
+-   `supabase/`: Database schema, migrations, and seed data.
+
+## 🚀 Deployment
+
+The site is hosted on **Vercel**. Due to historical repository naming, the project is connected to `jjathompson4/personal-site-v1` on GitHub, but pushes are mirrored to both `personal-site` and `personal-site-v1` to ensure deployment stability.
+
+### Deploying Changes
+Pushing to the `main` branch of either repository will trigger a Vercel build. Always verify the build commit hash matches your latest local work.
 
 ## 🎨 Design System
 
