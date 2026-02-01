@@ -30,7 +30,7 @@ export default async function ThoughtsPage() {
                         <div className="space-y-6">
                             {posts.length > 0 ? (
                                 posts.map((post) => (
-                                    <ArticleCard key={post.id} post={post} />
+                                    <ArticleCard key={post.id} article={post} />
                                 ))
                             ) : (
                                 <div className="py-24 text-center border rounded-2xl bg-background/50 border-dashed">
