@@ -27,8 +27,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                         {/* Navigation */}
                         <Button variant="ghost" asChild className="-ml-4 text-muted-foreground w-fit mb-8 group">
-                            <Link href="/articles">
-                                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" /> All Articles
+                            <Link href="/">
+                                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" /> Back to Stream
                             </Link>
                         </Button>
 

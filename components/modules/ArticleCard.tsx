@@ -136,7 +136,7 @@ export function ArticleCard({ article }: { article: Article }) {
                                     <span>•</span>
                                     <div className="flex gap-2">
                                         {article.tags.slice(0, 3).map(tag => (
-                                            <span key={tag} className="uppercase tracking-wider font-semibold text-[10px]">
+                                            <span key={tag} className="font-semibold text-[10px] text-muted-foreground/80">
                                                 #{tag}
                                             </span>
                                         ))}

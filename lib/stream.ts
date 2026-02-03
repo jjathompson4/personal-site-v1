@@ -7,6 +7,7 @@ export type StreamItem =
     | { type: 'text', media: Media, content: string, timestamp: string }
     | { type: 'article', article: Article, timestamp: string }
     | { type: 'project', project: Project, timestamp: string }
+    | { type: 'resume', timestamp: string }
 
 /**
  * Helper to group media, posts, and projects into a unified stream

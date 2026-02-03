@@ -11,7 +11,7 @@ interface JournalUpdateProps {
 
 export function JournalUpdate({ content, className }: JournalUpdateProps) {
     return (
-        <article className={cn("prose prose-neutral dark:prose-invert max-w-none md:prose-lg", className)}>
+        <article className={cn("prose prose-neutral dark:prose-invert max-w-none", className)}>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}
             </ReactMarkdown>

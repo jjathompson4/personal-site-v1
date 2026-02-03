@@ -38,14 +38,6 @@ export function Navigation({ modules }: NavigationProps) {
         setMounted(true)
     }, [])
 
-    // Filter enabled modules
-    const activeModules = modules.filter(m => m.enabled)
-    const professionalRoutes = activeModules.filter(m => m.category === 'work').map(m => ({ label: m.name, href: `/?tab=work&tag=${m.slug}` }))
-    const personalRoutes = activeModules.filter(m => m.category === 'personal').map(m => ({ label: m.name, href: `/?tab=personal&tag=${m.slug}` }))
-
-    if (!mounted) {
-        return <div className="hidden md:flex items-center gap-6 h-10 w-48" /> // placeholder
-    }
 
     return (
         <>
@@ -55,47 +47,37 @@ export function Navigation({ modules }: NavigationProps) {
                     href="/"
                     className={cn(
                         "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        pathname === "/"
+                        pathname === "/" && !usePathname().includes('tab=')
                             ? "text-foreground bg-muted/50"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                 >
-                    Home
+                    All Activity
                 </Link>
 
-                {professionalRoutes.length > 0 && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 data-[state=open]:bg-muted/50 data-[state=open]:text-foreground transition-all rounded-md px-3 py-2">
-                                Professional <ChevronDown className="ml-1 h-4 w-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                            {professionalRoutes.map((route) => (
-                                <DropdownMenuItem key={route.href} asChild>
-                                    <Link href={route.href} className="cursor-pointer">{route.label}</Link>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
+                <Link
+                    href="/?tab=professional"
+                    className={cn(
+                        "text-sm font-medium transition-all rounded-md px-3 py-2",
+                        pathname === "/" && usePathname().includes('tab=professional')
+                            ? "text-foreground bg-muted/50"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                >
+                    Professional
+                </Link>
 
-                {personalRoutes.length > 0 && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <button className="flex items-center text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 data-[state=open]:bg-muted/50 data-[state=open]:text-foreground transition-all rounded-md px-3 py-2">
-                                Personal <ChevronDown className="ml-1 h-4 w-4" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                            {personalRoutes.map((route) => (
-                                <DropdownMenuItem key={route.href} asChild>
-                                    <Link href={route.href} className="cursor-pointer">{route.label}</Link>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                )}
+                <Link
+                    href="/?tab=personal"
+                    className={cn(
+                        "text-sm font-medium transition-all rounded-md px-3 py-2",
+                        pathname === "/" && usePathname().includes('tab=personal')
+                            ? "text-foreground bg-muted/50"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                >
+                    Personal
+                </Link>
             </nav>
 
             <div className="flex items-center gap-4">
@@ -155,64 +137,43 @@ export function Navigation({ modules }: NavigationProps) {
                         <span className="sr-only">Toggle menu</span>
                     </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className="w-[300px] sm:max-w-sm">
                     <SheetHeader className="sr-only">
                         <SheetTitle>Navigation Menu</SheetTitle>
                     </SheetHeader>
-                    <nav className="flex flex-col gap-6 mt-8">
+                    <nav className="flex flex-col gap-6 mt-12 px-6">
                         <Link
                             href="/"
                             onClick={() => setOpen(false)}
-                            className="text-lg font-semibold"
+                            className={cn(
+                                "text-2xl font-bold transition-colors hover:text-primary",
+                                pathname === "/" && !usePathname().includes('tab=') ? "text-primary" : "text-foreground"
+                            )}
                         >
-                            Home
+                            All Activity
                         </Link>
 
-                        {professionalRoutes.length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Professional</h4>
-                                <div className="flex flex-col gap-2 pl-4 border-l">
-                                    {professionalRoutes.map((route) => (
-                                        <Link
-                                            key={route.href}
-                                            href={route.href}
-                                            onClick={() => setOpen(false)}
-                                            className={cn(
-                                                'block w-full text-sm font-medium transition-all rounded-md px-3 py-2',
-                                                pathname === route.href
-                                                    ? 'text-foreground bg-muted/50'
-                                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                                            )}
-                                        >
-                                            {route.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        <Link
+                            href="/?tab=professional"
+                            onClick={() => setOpen(false)}
+                            className={cn(
+                                "text-2xl font-bold transition-colors hover:text-primary",
+                                pathname === "/" && usePathname().includes('tab=professional') ? "text-primary" : "text-foreground"
+                            )}
+                        >
+                            Professional
+                        </Link>
 
-                        {personalRoutes.length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Personal</h4>
-                                <div className="flex flex-col gap-2 pl-4 border-l">
-                                    {personalRoutes.map((route) => (
-                                        <Link
-                                            key={route.href}
-                                            href={route.href}
-                                            onClick={() => setOpen(false)}
-                                            className={cn(
-                                                'text-sm font-medium transition-colors hover:text-primary py-1',
-                                                pathname === route.href
-                                                    ? 'text-foreground'
-                                                    : 'text-muted-foreground'
-                                            )}
-                                        >
-                                            {route.label}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        <Link
+                            href="/?tab=personal"
+                            onClick={() => setOpen(false)}
+                            className={cn(
+                                "text-2xl font-bold transition-colors hover:text-primary",
+                                pathname === "/" && usePathname().includes('tab=personal') ? "text-primary" : "text-foreground"
+                            )}
+                        >
+                            Personal
+                        </Link>
                     </nav>
                 </SheetContent>
             </Sheet>

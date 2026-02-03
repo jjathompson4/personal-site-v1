@@ -90,7 +90,7 @@ export function ArticleLayout({ article }: { article: Article }) {
             )}
 
             <header className="space-y-6 text-center transition-opacity duration-300" style={{ opacity: scrollOpacity }}>
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground uppercase tracking-widest font-bold">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground tracking-widest font-bold">
                     <span>
                         {new Date(article.published_at || article.created_at).toLocaleDateString(undefined, {
                             year: 'numeric',
@@ -107,21 +107,21 @@ export function ArticleLayout({ article }: { article: Article }) {
                         className="w-full text-center text-4xl md:text-5xl font-bold tracking-tight bg-transparent border-none focus:ring-0 outline-none"
                     />
                 ) : (
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none uppercase">
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
                         {title}
                     </h1>
                 )}
 
                 {article.excerpt && (
-                    <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-serif italic">
+                    <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto italic">
                         {article.excerpt}
                     </p>
                 )}
             </header>
 
             <div className={cn(
-                "prose prose-zinc dark:prose-invert max-w-none prose-lg md:prose-xl font-serif leading-relaxed",
-                "prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase",
+                "prose prose-zinc dark:prose-invert max-w-none prose-lg md:prose-xl leading-relaxed",
+                "prose-headings:font-bold prose-headings:tracking-tight",
                 "prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-lg",
                 "prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
             )}>
@@ -132,7 +132,7 @@ export function ArticleLayout({ article }: { article: Article }) {
                         className="w-full h-[500px] p-4 font-mono text-sm bg-muted/50 rounded-lg border-none focus:ring-1 focus:ring-primary outline-none"
                     />
                 ) : (
-                    <div className="first-letter:text-7xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:leading-none">
+                    <div>
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {content}
                         </ReactMarkdown>

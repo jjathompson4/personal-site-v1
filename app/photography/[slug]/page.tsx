@@ -30,8 +30,8 @@ export default async function GalleryDetailPage({ params }: { params: Promise<{ 
                         {/* Header */}
                         <div className="max-w-3xl space-y-6">
                             <Button variant="ghost" asChild className="-ml-4 text-muted-foreground">
-                                <Link href="/photography">
-                                    <ArrowLeft className="mr-2 h-4 w-4" /> All Collections
+                                <Link href="/">
+                                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stream
                                 </Link>
                             </Button>
 

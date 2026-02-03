@@ -58,21 +58,21 @@ export default async function HomePage({
     const query = q?.toLowerCase()
     const activeModules = modules.filter(m => m.enabled)
 
-    // A. Filter by Tab (Work / Personal)
+    // A. Filter by Tab (Professional / Personal)
     let filteredMedia = allMedia
     let filteredArticles = articles
     let filteredProjects = projects
 
-    if (tab === 'work') {
-        const workSlugs = activeModules.filter(m => m.category === 'work').map(m => m.slug)
-        filteredMedia = allMedia.filter(m => m.module_tags?.some((t: string) => workSlugs.includes(t)))
-        filteredArticles = articles.filter(a => a.tags?.some((t: string) => workSlugs.includes(t)))
-        filteredProjects = projects // All projects are work
+    if (tab === 'professional' || tab === 'work') {
+        const professionalSlugs = activeModules.filter(m => m.category === 'work').map(m => m.slug)
+        filteredMedia = allMedia.filter(m => m.module_tags?.some((t: string) => professionalSlugs.includes(t)))
+        filteredArticles = articles.filter(a => a.tags?.some((t: string) => professionalSlugs.includes(t)))
+        filteredProjects = projects // All projects are professional
     } else if (tab === 'personal') {
         const personalSlugs = activeModules.filter(m => m.category === 'personal').map(m => m.slug)
         filteredMedia = allMedia.filter(m => m.module_tags?.some((t: string) => personalSlugs.includes(t)))
         filteredArticles = articles.filter(a => a.tags?.some((t: string) => personalSlugs.includes(t)))
-        filteredProjects = [] // Projects are work
+        filteredProjects = [] // Projects are professional
     }
 
     // B. Filter by specific Tag
@@ -108,7 +108,12 @@ export default async function HomePage({
         textContents.set(file.id, content)
     }))
 
-    const stream = buildStream(filteredMedia, textContents, filteredArticles, filteredProjects)
+    let stream = buildStream(filteredMedia, textContents, filteredArticles, filteredProjects)
+
+    // Inject Resume if Professional filter is active
+    if (tab === 'professional' || tab === 'work') {
+        stream.unshift({ type: 'resume', timestamp: new Date().toISOString() })
+    }
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -125,7 +130,7 @@ export default async function HomePage({
                     <div className="sticky top-16 z-30 pt-0 pb-4 md:pt-2 md:pb-6 bg-background/5 inline-block w-full">
                         <div className="backdrop-blur-md bg-background/50 rounded-2xl p-3 md:p-4 border shadow-sm">
                             <Suspense fallback={<div className="h-40 animate-pulse bg-muted rounded-xl" />}>
-                                <StreamFilters categories={activeModules} />
+                                <StreamFilters />
                             </Suspense>
                         </div>
                     </div>
@@ -135,13 +140,13 @@ export default async function HomePage({
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-4 flex-1">
                                 <h2 className="text-xl font-semibold capitalize">
-                                    {tag ? tag.replace(/-/g, ' ') : tab === 'all' ? 'Latest Activity' : `${tab} Stream`}
+                                    {tab === 'all' ? 'The Stream' : `${tab} Stream`}
                                 </h2>
                                 <div className="h-px bg-border flex-1" />
                             </div>
                             <ModuleAdminActions
-                                moduleSlug={tag || (tab === 'work' ? 'architecture' : 'inbox')}
-                                moduleName={tag || tab}
+                                moduleSlug={tab === 'professional' || tab === 'work' ? 'architecture' : 'inbox'}
+                                moduleName={tab}
                             />
                         </div>
 

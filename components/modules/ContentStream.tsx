@@ -7,6 +7,7 @@ import { ArticleCard } from '@/components/modules/ArticleCard'
 import { ProjectCard } from '@/components/modules/ProjectCard'
 import { LucideIcon, Pencil, Save, X, Trash2, FolderInput, Loader2, MoreHorizontal } from 'lucide-react'
 import { StreamItem } from '@/lib/stream'
+import { ResumeCard } from '@/components/modules/ResumeCard'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { useAdmin } from '@/components/providers/AdminProvider'
@@ -132,10 +133,14 @@ export function ContentStream({
                     const isText = item.type === 'text'
                     const isArticle = item.type === 'article'
                     const isProject = item.type === 'project'
+                    const isResume = item.type === 'resume'
 
-                    const itemIds = item.type === 'photos' ? item.photos.map(p => p.id) :
-                        item.type === 'text' ? [item.media.id] :
-                            item.type === 'article' ? [item.article.id] : [item.project.id]
+                    let itemIds: string[] = []
+                    if (item.type === 'photos') itemIds = item.photos.map(p => p.id)
+                    else if (item.type === 'text') itemIds = [item.media.id]
+                    else if (item.type === 'article') itemIds = [item.article.id]
+                    else if (item.type === 'project') itemIds = [item.project.id]
+
                     const firstId = itemIds[0]
 
                     return (
@@ -202,9 +207,11 @@ export function ContentStream({
                                 <ArticleCard article={item.article} />
                             ) : isProject ? (
                                 <ProjectCard project={item.project} />
-                            ) : (
+                            ) : isResume ? (
+                                <ResumeCard />
+                            ) : item.type === 'photos' ? (
                                 <PhotoGrid photos={item.photos} />
-                            )}
+                            ) : null}
                         </div>
                     )
                 })

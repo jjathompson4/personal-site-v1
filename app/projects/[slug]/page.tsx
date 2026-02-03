@@ -29,8 +29,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
                         {/* Navigation */}
                         <Button variant="ghost" asChild className="-ml-4 text-muted-foreground">
-                            <Link href="/projects">
-                                <ArrowLeft className="mr-2 h-4 w-4" /> All Projects
+                            <Link href="/">
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stream
                             </Link>
                         </Button>
 
