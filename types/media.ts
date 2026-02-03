@@ -16,5 +16,8 @@ export interface Media {
     caption?: string
     sort_order: number
     metadata: Record<string, any>
+    classification: string
+    title: string | null
+    text_content: string | null
     created_at: string
 }

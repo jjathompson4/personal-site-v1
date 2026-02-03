@@ -13,63 +13,69 @@ export async function POST(request: Request) {
         }
 
         const formData = await request.formData()
-        const file = formData.get('file') as File
+        const file = formData.get('file') as File | null
         const moduleSlug = formData.get('module_slug') as string | null
         const contentId = formData.get('content_id') as string | null
+        const classification = formData.get('classification') as string || 'both'
+        const textContent = formData.get('text_content') as string | null
+        const title = formData.get('title') as string | null
 
         // Infer bucket from moduleSlug if possible, otherwise default to photography
-        // Modules: 'photography' -> photography bucket
-        // 'projects', 'architecture', 'software-pro', 'software-personal' -> projects bucket
-        // 'thoughts', 'thoughts-aec', 'thoughts-personal' -> projects or photography? Let's default to projects for text-heavy/mixed content or photo for photography.
-        // Simple heuristic: if module contains 'project' or 'software' or 'architecture' -> projects. Else photography.
         let bucket = formData.get('bucket') as string || 'photography'
 
         if (moduleSlug) {
-            if (['projects', 'architecture', 'software-pro', 'software-personal'].includes(moduleSlug)) {
+            if (['projects', 'architecture', 'software-pro', 'software-personal', 'creative'].includes(moduleSlug)) {
                 bucket = 'projects'
             } else if (moduleSlug === 'photography') {
                 bucket = 'photography'
             }
         }
 
-        if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+        let filePath = ''
+        let publicUrl: string | null = null
+
+        if (file) {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+            filePath = `${fileName}`
+
+            // 1. Upload to Storage
+            const { data: storageData, error: storageError } = await supabase.storage
+                .from(bucket)
+                .upload(filePath, file)
+
+            if (storageError) {
+                console.error('Storage Upload Error:', storageError)
+                return NextResponse.json({ error: storageError.message }, { status: 500 })
+            }
+
+            // 2. Get Public URL
+            const { data: urlData } = supabase.storage
+                .from(bucket)
+                .getPublicUrl(filePath)
+
+            publicUrl = urlData.publicUrl
         }
-
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `${fileName}`
-
-        // 1. Upload to Storage
-        const { data: storageData, error: storageError } = await supabase.storage
-            .from(bucket)
-            .upload(filePath, file)
-
-        if (storageError) {
-            return NextResponse.json({ error: storageError.message }, { status: 500 })
-        }
-
-        // 2. Get Public URL
-        const { data: { publicUrl } } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(filePath)
 
         // 3. Insert into Database
-        const moduleTags = moduleSlug ? [moduleSlug] : [] // Initialize array with the primary slug
+        const moduleTags = moduleSlug ? [moduleSlug] : []
 
-        const mediaData: Partial<Media> = {
+        const mediaData: any = {
             file_url: publicUrl,
-            file_type: file.type.startsWith('image/') ? 'image' :
+            file_type: file ? (file.type.startsWith('image/') ? 'image' :
                 file.type === 'application/pdf' ? 'pdf' :
-                    file.name.endsWith('.md') || file.name.endsWith('.mdx') || file.type.startsWith('text/') ? 'text' : 'video',
-            filename: file.name,
-            file_size: file.size,
+                    file.name.endsWith('.md') || file.name.endsWith('.mdx') || file.type.startsWith('text/') ? 'text' : 'video') : 'text',
+            filename: file?.name || (title ? `${title}.md` : 'thought.md'),
+            file_size: file?.size || 0,
             sort_order: 0,
             metadata: {},
             content_id: contentId || null,
             bucket,
             module_slug: moduleSlug || undefined,
-            module_tags: moduleTags
+            module_tags: moduleTags,
+            classification,
+            text_content: textContent,
+            title
         }
 
         // Add dimensions if image (optional optimization, skipping for MVP unless we parse on server)
@@ -81,8 +87,11 @@ export async function POST(request: Request) {
             .single()
 
         if (dbError) {
+            console.error('Database insertion error:', dbError)
             // Cleanup storage if DB fails
-            await supabase.storage.from(bucket).remove([filePath])
+            if (filePath) {
+                await supabase.storage.from(bucket).remove([filePath])
+            }
             return NextResponse.json({ error: dbError.message }, { status: 500 })
         }
 

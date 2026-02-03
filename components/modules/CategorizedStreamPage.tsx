@@ -7,15 +7,13 @@ import matter from 'gray-matter'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
 import { getModuleBySlug } from '@/lib/supabase/queries/modules'
-import { getArticles } from '@/lib/supabase/queries/articles'
 import { Suspense } from 'react'
 import { SearchInput } from '@/components/shared/SearchInput'
-import { ModuleAdminActions } from '@/components/admin/ModuleAdminActions'
 
 interface CategorizedStreamPageProps {
     moduleTag: string
-    title?: string // Made optional as fallback
-    subtitle?: string // Made optional as fallback
+    title?: string
+    subtitle?: string
     icon: LucideIcon
     emptyMessage?: string
     sortOrder?: 'asc' | 'desc' | 'manual'
@@ -35,8 +33,6 @@ async function getModuleMedia(tag: string, sortOrder?: 'asc' | 'desc' | 'manual'
     } else if (sortOrder === 'desc') {
         query = query.order('created_at', { ascending: false })
     } else {
-        // Manual / Default
-        // Sort by sort_order ASC, then created_at DESC as fallback
         query = query.order('sort_order', { ascending: true })
             .order('created_at', { ascending: false })
     }
@@ -67,27 +63,28 @@ export async function CategorizedStreamPage({
     sortOrder,
     searchQuery
 }: CategorizedStreamPageProps) {
-    const [allMedia, moduleData, articles] = await Promise.all([
+    const [allMedia, moduleData] = await Promise.all([
         getModuleMedia(moduleTag, sortOrder),
-        getModuleBySlug(moduleTag),
-        getArticles(moduleTag) // Fetch articles tagged with this module's slug
+        getModuleBySlug(moduleTag)
     ])
 
-    // Use DB data if available, otherwise fallback to props
     const displayTitle = moduleData?.name || fallbackTitle || "Module"
     const displaySubtitle = moduleData?.description || fallbackSubtitle || ""
 
+    // Filter out drafts from public view
+    const filteredMedia = allMedia.filter(m => m.classification !== 'draft')
+
     // 1. Fetch content for text files in parallel
     const textContents = new Map<string, string>()
-    const textFiles = allMedia.filter(m => m.file_type === 'text')
+    const textFiles = filteredMedia.filter(m => m.file_type === 'text')
 
     await Promise.all(textFiles.map(async (file) => {
         const content = await fetchMarkdownContent(file.file_url)
         textContents.set(file.id, content)
     }))
 
-    // 2. Build the Stream (Merging media and articles)
-    let stream = buildStream(allMedia, textContents, articles)
+    // 2. Build the Stream
+    let stream = buildStream(filteredMedia, textContents)
 
     // 3. Apply Search Filter
     if (searchQuery) {
@@ -99,7 +96,8 @@ export async function CategorizedStreamPage({
                     (p.alt_text && p.alt_text.toLowerCase().includes(query))
                 )
             } else if (item.type === 'text') {
-                return item.content.toLowerCase().includes(query)
+                return (item.content.toLowerCase().includes(query)) ||
+                    (item.media.title?.toLowerCase().includes(query))
             }
             return false
         })
@@ -120,11 +118,6 @@ export async function CategorizedStreamPage({
                             <Suspense>
                                 <SearchInput placeholder={`Search ${displayTitle}...`} />
                             </Suspense>
-
-                            <ModuleAdminActions
-                                moduleSlug={moduleTag}
-                                moduleName={displayTitle}
-                            />
                         </div>
 
                         {/* Stream Content */}

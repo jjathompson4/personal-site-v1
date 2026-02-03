@@ -14,6 +14,7 @@ interface MediaUploaderProps {
     bucket?: 'photography' | 'projects'
     moduleSlug?: string
     contentId?: string
+    classification?: string
     onUploadComplete?: (media: Media) => void
     className?: string
 }
@@ -22,6 +23,7 @@ export function MediaUploader({
     bucket = 'photography',
     moduleSlug,
     contentId,
+    classification = 'both',
     onUploadComplete,
     className
 }: MediaUploaderProps) {
@@ -46,6 +48,7 @@ export function MediaUploader({
                 formData.append('bucket', bucket)
                 if (moduleSlug) formData.append('module_slug', moduleSlug)
                 if (contentId) formData.append('content_id', contentId)
+                if (classification) formData.append('classification', classification)
 
                 const response = await fetch('/api/media/upload', {
                     method: 'POST',
@@ -53,8 +56,14 @@ export function MediaUploader({
                 })
 
                 if (!response.ok) {
-                    const error = await response.json()
-                    throw new Error(error.error || 'Upload failed')
+                    const errorText = await response.text()
+                    console.error('Upload API failure:', errorText)
+                    let errorMessage = 'Upload failed'
+                    try {
+                        const errorJson = JSON.parse(errorText)
+                        errorMessage = errorJson.error || errorMessage
+                    } catch (e) { }
+                    throw new Error(errorMessage)
                 }
 
                 const data = await response.json()
@@ -80,7 +89,7 @@ export function MediaUploader({
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.gif'],
+            'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.heic', '.heif'],
             'application/pdf': ['.pdf'],
             'text/markdown': ['.md', '.mdx'],
             'text/x-markdown': ['.md', '.mdx'],

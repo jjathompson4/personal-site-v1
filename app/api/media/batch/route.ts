@@ -22,30 +22,32 @@ export async function POST(request: Request) {
         }
 
         if (action === 'assign_module') {
-            // "Assign" = Set Tags (Replace)
-            // If target is "uncategorized", clear tags.
             const tags = target === 'uncategorized' ? [] : [target]
 
             const { data, error } = await supabase
                 .from('media')
                 .update({
                     module_tags: tags,
-                    module_slug: target === 'uncategorized' ? null : target // Keep backward compat for now
+                    module_slug: target === 'uncategorized' ? null : target
                 })
                 .in('id', ids)
                 .select()
 
             if (error) throw error
+
+            // Recursive update for children
+            await supabase
+                .from('media')
+                .update({
+                    module_tags: tags,
+                    module_slug: target === 'uncategorized' ? null : target
+                })
+                .in('content_id', ids)
+
             return NextResponse.json(data)
         }
 
         if (action === 'add_tag') {
-            // Append tag if it doesn't exist
-            // Using a raw query is safest for array operations, but Supabase JS client 
-            // doesn't support 'array_append' cleanly in .update() without using a function or raw SQL.
-            // WORKAROUND: Fetch -> Modify -> Update. 
-            // For MVP with < 50 items selected, this is acceptable performance.
-
             const { data: items, error: fetchError } = await supabase
                 .from('media')
                 .select('id, module_tags')
@@ -53,8 +55,6 @@ export async function POST(request: Request) {
 
             if (fetchError) throw fetchError
 
-            // Prepare updates
-            // We'll update each item. Use Promise.all
             const updates = items.map(item => {
                 const currentTags = item.module_tags || []
                 if (!currentTags.includes(target)) {
@@ -64,13 +64,36 @@ export async function POST(request: Request) {
                         .update({ module_tags: newTags })
                         .eq('id', item.id)
                 }
-                return Promise.resolve({ error: null }) // No-op
+                return Promise.resolve({ error: null })
             })
 
             const results = await Promise.all(updates)
-            const errors = results.filter(r => r.error)
 
-            if (errors.length > 0) throw new Error('Some updates failed')
+            // Also update children to have this tag
+            // We can't easily fetch-and-append for all children in one go without a loop or RPC
+            // But we can at least push the tag to any content_id in ids
+            // Supabase doesn't have a direct 'array_append' via API without RPC.
+            // For now, we'll fetch children too or just do an RPC if we had one.
+            // Simplified for now: just update children classification/basic tags.
+            // Actually, let's fetch children too.
+            const { data: children } = await supabase
+                .from('media')
+                .select('id, module_tags')
+                .in('content_id', ids)
+
+            if (children && children.length > 0) {
+                const childUpdates = children.map(child => {
+                    const currentTags = child.module_tags || []
+                    if (!currentTags.includes(target)) {
+                        const newTags = [...currentTags, target]
+                        return supabase.from('media').update({ module_tags: newTags }).eq('id', child.id)
+                    }
+                    return Promise.resolve({ error: null })
+                })
+                await Promise.all(childUpdates)
+            }
+
+            if (results.some(r => r.error)) throw new Error('Some updates failed')
 
             return NextResponse.json({ success: true, updated: items.length })
         }
@@ -84,57 +107,87 @@ export async function POST(request: Request) {
         // For now, handling bucket move.
 
         if (action === 'delete') {
-            // 1. Get files to delete from Storage (via URL)
-            const { data: filesToDelete, error: fetchError } = await supabase
-                .from('media')
-                .select('id, file_url, bucket')
+            const tableName = targetId || 'media'
+
+            // 1. Get files to delete from Storage (only if media table)
+            if (tableName === 'media') {
+                // Find children too
+                const { data: childrenIds } = await supabase
+                    .from('media')
+                    .select('id')
+                    .in('content_id', ids)
+
+                const allIdsToDelete = [...ids, ...(childrenIds?.map(c => c.id) || [])]
+
+                const { data: filesToDelete, error: fetchError } = await supabase
+                    .from('media')
+                    .select('id, file_url, bucket')
+                    .in('id', allIdsToDelete)
+
+                if (fetchError) throw fetchError
+
+                // 2. Delete from Storage
+                const filesByBucket: Record<string, string[]> = {}
+                filesToDelete.forEach(f => {
+                    try {
+                        const url = new URL(f.file_url)
+                        const parts = url.pathname.split(`/${f.bucket}/`)
+                        if (parts.length > 1) {
+                            const path = decodeURIComponent(parts[1])
+                            if (!filesByBucket[f.bucket]) filesByBucket[f.bucket] = []
+                            filesByBucket[f.bucket].push(path)
+                        }
+                    } catch (e) { }
+                })
+
+                const storagePromises = Object.entries(filesByBucket).map(([bucket, paths]) =>
+                    supabase.storage.from(bucket).remove(paths)
+                )
+                await Promise.all(storagePromises)
+
+                // 3. Delete from DB (All at once)
+                const { error: deleteError } = await supabase
+                    .from('media')
+                    .delete()
+                    .in('id', allIdsToDelete)
+
+                if (deleteError) throw deleteError
+
+                return NextResponse.json({ success: true, count: allIdsToDelete.length })
+            } else {
+                // Legacy / other table delete
+                const { error: deleteError } = await supabase
+                    .from(tableName as any)
+                    .delete()
+                    .in('id', ids)
+
+                if (deleteError) throw deleteError
+                return NextResponse.json({ success: true, count: ids.length })
+            }
+        }
+
+        if (action === 'update_classification') {
+            const tableName = targetId || 'media' // Use targetId as table name for batch classification
+            const { data, error } = await supabase
+                .from(tableName as any)
+                .update({
+                    classification: target,
+                    created_at: target !== 'draft' ? new Date().toISOString() : undefined // Refresh timestamp on publish
+                })
                 .in('id', ids)
+                .select()
 
-            if (fetchError) throw fetchError
+            if (error) throw error
 
-            // 2. Delete from Storage
-            // Group by bucket
-            const filesByBucket: Record<string, string[]> = {}
-            filesToDelete.forEach(f => {
-                // Parse path from URL
-                // URL: .../storage/v1/object/public/{bucket}/{path}
-                // or just take the last part if we know it's flat? 
-                // Uploader uses flat structure: `${Date}-${Random}.${Ext}`
-                // So splitting by '/' and taking last part is mostly safe, unless folders added later.
-                // Better: Split by `/${f.bucket}/`
+            // Recursive update for linked media if we are in the media table
+            if (tableName === 'media') {
+                await supabase
+                    .from('media')
+                    .update({ classification: target })
+                    .in('content_id', ids)
+            }
 
-                try {
-                    const url = new URL(f.file_url)
-                    // Pathname: /storage/v1/object/public/photography/123.jpg
-                    // We need '123.jpg'
-                    const parts = url.pathname.split(`/${f.bucket}/`)
-                    if (parts.length > 1) {
-                        const path = decodeURIComponent(parts[1])
-
-                        if (!filesByBucket[f.bucket]) filesByBucket[f.bucket] = []
-                        filesByBucket[f.bucket].push(path)
-                    }
-                } catch (e) {
-                    console.error('Failed to parse URL for delete:', f.file_url)
-                }
-            })
-
-            // Execute storage deletes
-            // Note: Storage delete doesn't throw if file missing, usually safe.
-            const storagePromises = Object.entries(filesByBucket).map(([bucket, paths]) =>
-                supabase.storage.from(bucket).remove(paths)
-            )
-            await Promise.all(storagePromises)
-
-            // 3. Delete from DB (Cascade should handle join tables, but we delete direct media rows)
-            const { error: deleteError } = await supabase
-                .from('media')
-                .delete()
-                .in('id', ids)
-
-            if (deleteError) throw deleteError
-
-            return NextResponse.json({ success: true, count: ids.length })
+            return NextResponse.json(data)
         }
 
         return NextResponse.json({ success: true })

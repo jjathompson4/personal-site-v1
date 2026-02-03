@@ -1,68 +1,79 @@
 import { Media } from '@/types/media'
-import { Article } from '@/types/article'
-import { Project } from '@/types/project'
 
 export type StreamItem =
-    | { type: 'photos', photos: Media[], timestamp: string }
-    | { type: 'text', media: Media, content: string, timestamp: string }
-    | { type: 'article', article: Article, timestamp: string }
-    | { type: 'project', project: Project, timestamp: string }
-    | { type: 'resume', timestamp: string }
+    | { type: 'photos', photos: Media[], timestamp: string, classification: string }
+    | { type: 'text', media: Media, content: string, photos?: Media[], timestamp: string, classification: string }
+    | { type: 'resume', timestamp: string, classification: string }
 
 /**
- * Helper to group media, posts, and projects into a unified stream
+ * Helper to group media into a unified stream
  */
 export function buildStream(
     mediaList: Media[],
-    textContents: Map<string, string>,
-    articles: Article[] = [],
-    projects: Project[] = []
+    textContents: Map<string, string>
 ): StreamItem[] {
     const stream: StreamItem[] = []
-    let currentPhotoGroup: Media[] = []
 
+    // 1. Group Photos by content_id
+    const photoGroups = new Map<string, Media[]>()
+    const unlinkedPhotos: Media[] = []
+    const textPosts: Media[] = []
+
+    mediaList.forEach(m => {
+        if (m.file_type === 'text') {
+            textPosts.push(m)
+        } else if (m.file_type === 'image' || m.file_type === 'video') {
+            if (m.content_id) {
+                const group = photoGroups.get(m.content_id) || []
+                photoGroups.set(m.content_id, [...group, m])
+            } else {
+                unlinkedPhotos.push(m)
+            }
+        }
+    })
+
+    // 2. Add Text Posts with their photos
+    textPosts.forEach(media => {
+        stream.push({
+            type: 'text',
+            media,
+            content: media.text_content || textContents.get(media.id) || '',
+            photos: photoGroups.get(media.id),
+            timestamp: media.created_at,
+            classification: media.classification || 'both'
+        })
+    })
+
+    // 3. Process unlinked photos (group by proximity)
+    let currentPhotoGroup: Media[] = []
     const flushPhotos = () => {
         if (currentPhotoGroup.length > 0) {
-            const timestamp = currentPhotoGroup[0].created_at
-            stream.push({ type: 'photos', photos: [...currentPhotoGroup], timestamp })
+            const first = currentPhotoGroup[0]
+            stream.push({
+                type: 'photos',
+                photos: [...currentPhotoGroup],
+                timestamp: first.created_at,
+                classification: first.classification || 'both'
+            })
             currentPhotoGroup = []
         }
     }
 
-    mediaList.forEach(media => {
-        if (media.file_type === 'image') {
-            currentPhotoGroup.push(media)
-        } else if (media.file_type === 'text') {
-            flushPhotos()
-            stream.push({
-                type: 'text',
-                media,
-                content: textContents.get(media.id) || '',
-                timestamp: media.created_at
-            })
+    unlinkedPhotos.forEach(p => {
+        if (currentPhotoGroup.length > 0) {
+            const last = currentPhotoGroup[currentPhotoGroup.length - 1]
+            const diff = Math.abs(new Date(p.created_at).getTime() - new Date(last.created_at).getTime())
+            if (diff < 60000) {
+                currentPhotoGroup.push(p)
+            } else {
+                flushPhotos()
+                currentPhotoGroup.push(p)
+            }
         } else {
-            flushPhotos()
+            currentPhotoGroup.push(p)
         }
     })
     flushPhotos()
-
-    // Add Articles
-    articles.forEach(article => {
-        stream.push({
-            type: 'article',
-            article,
-            timestamp: article.published_at || article.created_at
-        })
-    })
-
-    // Add Projects
-    projects.forEach(project => {
-        stream.push({
-            type: 'project',
-            project,
-            timestamp: project.created_at
-        })
-    })
 
     // Sort the entire stream by timestamp DESC (Newest First)
     return stream.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())

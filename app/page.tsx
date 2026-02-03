@@ -1,13 +1,9 @@
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { getModules } from '@/lib/supabase/queries/modules'
-import { getArticles } from '@/lib/supabase/queries/articles'
-import { getProjects } from '@/lib/supabase/queries/projects'
 import { createServerClient } from '@/lib/supabase/server'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
 import { StreamFilters } from '@/components/modules/StreamFilters'
-import { ModuleAdminActions } from '@/components/admin/ModuleAdminActions'
 import matter from 'gray-matter'
 import { Suspense, cache } from 'react'
 
@@ -46,73 +42,54 @@ export default async function HomePage({
 }) {
     const { tab = 'all', tag, q } = await searchParams
 
-    // 1. Fetch all baseline data
-    const [modules, allMedia, articles, projects] = await Promise.all([
-        getModules(),
-        getAllMedia(),
-        getArticles(),
-        getProjects()
-    ])
+    // 1. Fetch only Media
+    const allMediaRaw = await getAllMedia()
+
+    // Filter out drafts from public view
+    const allMedia = allMediaRaw.filter(m => m.classification !== 'draft')
 
     // 2. Prepare Filtering Logic
     const query = q?.toLowerCase()
-    const activeModules = modules.filter(m => m.enabled)
 
-    // A. Filter by Tab (Professional / Personal)
+    // Filter by Tab (Professional / Personal)
     let filteredMedia = allMedia
-    let filteredArticles = articles
-    let filteredProjects = projects
 
     if (tab === 'professional' || tab === 'work') {
-        const professionalSlugs = activeModules.filter(m => m.category === 'work').map(m => m.slug)
-        filteredMedia = allMedia.filter(m => m.module_tags?.some((t: string) => professionalSlugs.includes(t)))
-        filteredArticles = articles.filter(a => a.tags?.some((t: string) => professionalSlugs.includes(t)))
-        filteredProjects = projects // All projects are professional
+        filteredMedia = allMedia.filter(m => m.classification === 'pro' || m.classification === 'professional' || m.classification === 'both' || !m.classification)
     } else if (tab === 'personal') {
-        const personalSlugs = activeModules.filter(m => m.category === 'personal').map(m => m.slug)
-        filteredMedia = allMedia.filter(m => m.module_tags?.some((t: string) => personalSlugs.includes(t)))
-        filteredArticles = articles.filter(a => a.tags?.some((t: string) => personalSlugs.includes(t)))
-        filteredProjects = [] // Projects are professional
+        filteredMedia = allMedia.filter(m => m.classification === 'personal' || m.classification === 'both')
     }
 
-    // B. Filter by specific Tag
+    // Filter by specific Tag
     if (tag) {
         filteredMedia = filteredMedia.filter(m => m.module_tags?.includes(tag))
-        filteredArticles = filteredArticles.filter(a => a.tags?.includes(tag))
-        filteredProjects = filteredProjects.filter(p => p.type === tag || p.type.replace('-pro', '').replace('-personal', '') === tag)
     }
 
-    // C. Filter by Search Query
+    // Filter by Search Query
     if (query) {
         filteredMedia = filteredMedia.filter(m =>
             m.caption?.toLowerCase().includes(query) ||
-            m.file_name?.toLowerCase().includes(query)
-        )
-        filteredArticles = filteredArticles.filter(a =>
-            a.title.toLowerCase().includes(query) ||
-            a.excerpt?.toLowerCase().includes(query) ||
-            a.content?.toLowerCase().includes(query)
-        )
-        filteredProjects = filteredProjects.filter(p =>
-            p.title.toLowerCase().includes(query) ||
-            p.description?.toLowerCase().includes(query)
+            m.filename?.toLowerCase().includes(query) ||
+            m.text_content?.toLowerCase().includes(query) ||
+            m.title?.toLowerCase().includes(query)
         )
     }
 
     // 3. Group and Build Stream
     const textContents = new Map<string, string>()
-    const textFiles = filteredMedia.filter(m => m.file_type === 'text')
+    // Only fetch MD content if text_content is missing
+    const textFilesNeedFetch = filteredMedia.filter(m => m.file_type === 'text' && !m.text_content)
 
-    await Promise.all(textFiles.map(async (file) => {
+    await Promise.all(textFilesNeedFetch.map(async (file) => {
         const content = await fetchMarkdownContent(file.file_url)
         textContents.set(file.id, content)
     }))
 
-    let stream = buildStream(filteredMedia, textContents, filteredArticles, filteredProjects)
+    let stream = buildStream(filteredMedia, textContents)
 
     // Inject Resume if Professional filter is active
     if (tab === 'professional' || tab === 'work') {
-        stream.unshift({ type: 'resume', timestamp: new Date().toISOString() })
+        stream.unshift({ type: 'resume', timestamp: new Date().toISOString(), classification: 'pro' })
     }
 
     return (
@@ -144,10 +121,6 @@ export default async function HomePage({
                                 </h2>
                                 <div className="h-px bg-border flex-1" />
                             </div>
-                            <ModuleAdminActions
-                                moduleSlug={tab === 'professional' || tab === 'work' ? 'architecture' : 'inbox'}
-                                moduleName={tab}
-                            />
                         </div>
 
                         {stream.length > 0 ? (

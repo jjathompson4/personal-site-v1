@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     try {
         const json = await request.json()
-        const { title, description, content, cover_image, status, tools_used, links } = json
+        const { title, description, content, cover_image, status, tools_used, links, classification = 'pro' } = json
 
         const slug = slugify(title)
 
@@ -43,7 +43,8 @@ export async function POST(request: Request) {
                 cover_image,
                 status,
                 tools_used,
-                links
+                links,
+                classification
             })
             .select()
             .single()

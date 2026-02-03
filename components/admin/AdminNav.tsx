@@ -4,33 +4,18 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Home, Settings, Palette, Image, FileText, Layout, FolderOpen } from 'lucide-react'
+import { Settings, Plus, FileText } from 'lucide-react'
 
 const routes = [
     {
-        label: 'Dashboard',
-        icon: Home,
-        href: '/admin',
+        label: 'New Post',
+        icon: Plus,
+        href: '/admin/posts/new',
     },
     {
-        label: 'Modules',
-        icon: Palette,
-        href: '/admin/modules',
-    },
-    {
-        label: 'Library',
-        icon: FolderOpen, // Changed icon to represent unified content
-        href: '/admin/media',
-    },
-    {
-        label: 'Articles',
+        label: 'Drafts',
         icon: FileText,
-        href: '/admin/articles',
-    },
-    {
-        label: 'Projects',
-        icon: FolderOpen,
-        href: '/admin/projects',
+        href: '/admin/drafts',
     },
     {
         label: 'Settings',

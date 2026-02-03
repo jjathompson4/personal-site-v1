@@ -16,7 +16,7 @@ export async function PATCH(
         }
 
         const body = await request.json()
-        const { alt_text, caption, filename, description } = body
+        const { alt_text, caption, filename, title, text_content, classification, file_url } = body
 
         // Validate or sanitise inputs if needed
 
@@ -26,10 +26,10 @@ export async function PATCH(
                 alt_text,
                 caption,
                 filename,
-                // description field might allow storing extra info in metadata jsonb if we wanted, 
-                // for now let's stick to explicit columns or putting it in metadata jsonb
-                // The schema has explicit alt_text and caption.
-                // Let's also update updated_at if it exists? Schema usually defaults.
+                title,
+                text_content,
+                classification,
+                file_url
             })
             .eq('id', id)
             .select()

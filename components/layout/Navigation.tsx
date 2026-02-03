@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, ChevronDown, Edit3, Plus, FileText, Briefcase, Image as ImageIcon } from 'lucide-react'
+import { Menu, Edit3, Plus } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Module } from '@/types/module'
 import { useAdmin } from '@/components/providers/AdminProvider'
@@ -84,33 +84,11 @@ export function Navigation({ modules }: NavigationProps) {
                 {isAdmin && (
                     <div className="flex items-center gap-3">
                         {isEditMode && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
-                                        <Plus className="h-4 w-4" /> Create
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56">
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/admin/articles/new" className="cursor-pointer flex items-center">
-                                            <FileText className="mr-2 h-4 w-4 text-orange-500" />
-                                            <span>New Article</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/admin/projects/new" className="cursor-pointer flex items-center">
-                                            <Briefcase className="mr-2 h-4 w-4 text-blue-500" />
-                                            <span>New Project</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/admin/media" className="cursor-pointer flex items-center">
-                                            <ImageIcon className="mr-2 h-4 w-4 text-green-500" />
-                                            <span>Upload Media</span>
-                                        </Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button size="sm" asChild className="gap-2 bg-primary hover:bg-primary/90 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
+                                <Link href="/admin/posts/new">
+                                    <Plus className="h-4 w-4" /> New Post
+                                </Link>
+                            </Button>
                         )}
 
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20">
