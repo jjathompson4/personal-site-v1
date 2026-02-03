@@ -33,11 +33,11 @@ export default async function AdminLayout({
             </header>
 
             <div className="flex-1 w-full max-w-screen-xl mx-auto px-4">
-                <div className="flex gap-6 py-6 h-full">
+                <div className="flex flex-col md:flex-row gap-6 py-6 h-full">
                     {/* Sidebar */}
-                    <aside className="w-64 flex-shrink-0">
+                    <aside className="w-full md:w-64 flex-shrink-0">
                         <div
-                            className="rounded-xl border p-4 sticky top-24 glass-panel"
+                            className="rounded-xl border p-2 md:p-4 sticky top-16 md:top-24 z-40 glass-panel"
                         >
                             <AdminNav />
                         </div>

@@ -3,7 +3,7 @@ import { Footer } from '@/components/layout/Footer'
 import { createServerClient } from '@/lib/supabase/server'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
-import { StreamFilters } from '@/components/modules/StreamFilters'
+
 import matter from 'gray-matter'
 import { Suspense, cache } from 'react'
 
@@ -104,13 +104,7 @@ export default async function HomePage({
                         <p className="text-muted-foreground">Lighting Design & Software Craft</p>
                     </div>
 
-                    <div className="sticky top-16 z-30 pt-0 pb-4 md:pt-2 md:pb-6 bg-background/5 inline-block w-full">
-                        <div className="backdrop-blur-md bg-background/50 rounded-2xl p-3 md:p-4 border shadow-sm">
-                            <Suspense fallback={<div className="h-40 animate-pulse bg-muted rounded-xl" />}>
-                                <StreamFilters />
-                            </Suspense>
-                        </div>
-                    </div>
+
 
                     {/* The Journal Stream */}
                     <div className="relative">

@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react'
 export function SolarGradient({ children }: { children: React.ReactNode }) {
     const { theme } = useTheme()
     const [mounted, setMounted] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
 
     // Raw input values
     const targetMousePos = useRef({ x: 0, y: 0 })
@@ -27,6 +28,28 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         setMounted(true)
 
+        // Simple mobile check based on window width
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768)
+        }
+
+        checkMobile()
+        window.addEventListener('resize', checkMobile, { passive: true })
+
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
+
+    useEffect(() => {
+        if (!mounted) return
+
+        // Skip animation loop on mobile or if user prefers reduced motion
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+        const isReducedMotion = mediaQuery.matches
+
+        if (isMobile || isReducedMotion) {
+            return
+        }
+
         const handleScroll = () => {
             const scrollY = window.scrollY
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight
@@ -44,7 +67,11 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
         window.addEventListener('mousemove', handleMouseMove, { passive: true })
 
         let animationFrameId: number
+        let isRunning = true
+
         const render = () => {
+            if (!isRunning) return
+
             const lerpFactor = 0.08
 
             // Interpolate
@@ -76,11 +103,12 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
         animationFrameId = requestAnimationFrame(render)
 
         return () => {
+            isRunning = false
             window.removeEventListener('scroll', handleScroll)
             window.removeEventListener('mousemove', handleMouseMove)
             cancelAnimationFrame(animationFrameId)
         }
-    }, [])
+    }, [mounted, isMobile])
 
     if (!mounted) {
         return <>{children}</>
@@ -137,20 +165,20 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
                         }}
                     />
 
-                    {/* Bottom Left - Atmospheric Depth */}
+                    {/* Bottom Left - Atmospheric Depth - Hidden on mobile */}
                     <div
                         ref={orb4Ref}
-                        className="absolute bottom-[-10%] left-[-10%] w-[80vw] h-[80vw] rounded-full blur-[120px] will-change-transform"
+                        className="hidden md:block absolute bottom-[-10%] left-[-10%] w-[80vw] h-[80vw] rounded-full blur-[120px] will-change-transform"
                         style={{
                             opacity: 'calc(var(--orb-opacity) * 0.6)',
                             background: 'radial-gradient(circle at center, var(--orb-1) 0%, var(--orb-2) 60%, transparent 70%)',
                         }}
                     />
 
-                    {/* Center Accent - Static/Floaty */}
+                    {/* Center Accent - Static/Floaty - Hidden on mobile */}
                     <div
                         ref={orb5Ref}
-                        className="absolute top-[-35%] left-[30%] w-[60vw] h-[60vw] rounded-full blur-[120px] will-change-transform"
+                        className="hidden md:block absolute top-[-35%] left-[30%] w-[60vw] h-[60vw] rounded-full blur-[120px] will-change-transform"
                         style={{
                             opacity: 'calc(var(--orb-opacity) * 0.5)',
                             background: 'radial-gradient(circle at center, var(--orb-3) 0%, transparent 60%)',
