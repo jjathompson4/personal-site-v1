@@ -5,9 +5,10 @@ export async function GET() {
     try {
         const modules = await getModules()
         return NextResponse.json({ modules })
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
         return NextResponse.json(
-            { error: error.message },
+            { error: message },
             { status: 500 }
         )
     }

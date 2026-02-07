@@ -1,8 +1,18 @@
 import { createServerClient } from '@/lib/supabase/server'
+import { isAdminUser } from '@/lib/auth/shared'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
     const supabase = await createServerClient()
+    const {
+        data: { user },
+        error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !isAdminUser(user)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { ids, action, target, targetId } = await request.json()
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -108,68 +118,63 @@ export async function POST(request: Request) {
 
         if (action === 'delete') {
             const tableName = targetId || 'media'
+            if (tableName !== 'media') {
+                return NextResponse.json({ error: 'Unsupported target table' }, { status: 400 })
+            }
 
             // 1. Get files to delete from Storage (only if media table)
-            if (tableName === 'media') {
-                // Find children too
-                const { data: childrenIds } = await supabase
-                    .from('media')
-                    .select('id')
-                    .in('content_id', ids)
+            // Find children too
+            const { data: childrenIds } = await supabase
+                .from('media')
+                .select('id')
+                .in('content_id', ids)
 
-                const allIdsToDelete = [...ids, ...(childrenIds?.map(c => c.id) || [])]
+            const allIdsToDelete = [...ids, ...(childrenIds?.map(c => c.id) || [])]
 
-                const { data: filesToDelete, error: fetchError } = await supabase
-                    .from('media')
-                    .select('id, file_url, bucket')
-                    .in('id', allIdsToDelete)
+            const { data: filesToDelete, error: fetchError } = await supabase
+                .from('media')
+                .select('id, file_url, bucket')
+                .in('id', allIdsToDelete)
 
-                if (fetchError) throw fetchError
+            if (fetchError) throw fetchError
 
-                // 2. Delete from Storage
-                const filesByBucket: Record<string, string[]> = {}
-                filesToDelete.forEach(f => {
-                    try {
-                        const url = new URL(f.file_url)
-                        const parts = url.pathname.split(`/${f.bucket}/`)
-                        if (parts.length > 1) {
-                            const path = decodeURIComponent(parts[1])
-                            if (!filesByBucket[f.bucket]) filesByBucket[f.bucket] = []
-                            filesByBucket[f.bucket].push(path)
-                        }
-                    } catch (e) { }
-                })
+            // 2. Delete from Storage
+            const filesByBucket: Record<string, string[]> = {}
+            filesToDelete.forEach(f => {
+                try {
+                    const url = new URL(f.file_url)
+                    const parts = url.pathname.split(`/${f.bucket}/`)
+                    if (parts.length > 1) {
+                        const path = decodeURIComponent(parts[1])
+                        if (!filesByBucket[f.bucket]) filesByBucket[f.bucket] = []
+                        filesByBucket[f.bucket].push(path)
+                    }
+                } catch { }
+            })
 
-                const storagePromises = Object.entries(filesByBucket).map(([bucket, paths]) =>
-                    supabase.storage.from(bucket).remove(paths)
-                )
-                await Promise.all(storagePromises)
+            const storagePromises = Object.entries(filesByBucket).map(([bucket, paths]) =>
+                supabase.storage.from(bucket).remove(paths)
+            )
+            await Promise.all(storagePromises)
 
-                // 3. Delete from DB (All at once)
-                const { error: deleteError } = await supabase
-                    .from('media')
-                    .delete()
-                    .in('id', allIdsToDelete)
+            // 3. Delete from DB (All at once)
+            const { error: deleteError } = await supabase
+                .from('media')
+                .delete()
+                .in('id', allIdsToDelete)
 
-                if (deleteError) throw deleteError
+            if (deleteError) throw deleteError
 
-                return NextResponse.json({ success: true, count: allIdsToDelete.length })
-            } else {
-                // Legacy / other table delete
-                const { error: deleteError } = await supabase
-                    .from(tableName as any)
-                    .delete()
-                    .in('id', ids)
-
-                if (deleteError) throw deleteError
-                return NextResponse.json({ success: true, count: ids.length })
-            }
+            return NextResponse.json({ success: true, count: allIdsToDelete.length })
         }
 
         if (action === 'update_classification') {
-            const tableName = targetId || 'media' // Use targetId as table name for batch classification
+            const tableName = targetId || 'media'
+            if (tableName !== 'media') {
+                return NextResponse.json({ error: 'Unsupported target table' }, { status: 400 })
+            }
             const { data, error } = await supabase
-                .from(tableName as any)
+                .from('media')
                 .update({
                     classification: target,
                     created_at: target !== 'draft' ? new Date().toISOString() : undefined // Refresh timestamp on publish
@@ -179,21 +184,19 @@ export async function POST(request: Request) {
 
             if (error) throw error
 
-            // Recursive update for linked media if we are in the media table
-            if (tableName === 'media') {
-                await supabase
-                    .from('media')
-                    .update({ classification: target })
-                    .in('content_id', ids)
-            }
+            // Recursive update for linked media
+            await supabase
+                .from('media')
+                .update({ classification: target })
+                .in('content_id', ids)
 
             return NextResponse.json(data)
         }
 
         return NextResponse.json({ success: true })
-    } catch (error) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Update failed'
         console.error('Batch update failed:', error)
-        // @ts-ignore
-        return NextResponse.json({ error: error.message || 'Update failed' }, { status: 500 })
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

@@ -29,8 +29,8 @@ export async function GET(
     // Sort media by sort_order
     if (data.gallery_media) {
         data.media = data.gallery_media
-            .sort((a: any, b: any) => a.sort_order - b.sort_order)
-            .map((gm: any) => gm.media)
+            .sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order)
+            .map((gm: { media: unknown }) => gm.media)
         delete data.gallery_media
     }
 
@@ -72,8 +72,9 @@ export async function PATCH(
         }
 
         return NextResponse.json(data)
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 
@@ -100,7 +101,8 @@ export async function DELETE(
         }
 
         return NextResponse.json({ success: true })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

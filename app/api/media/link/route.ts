@@ -16,7 +16,7 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
         }
 
-        const updateData: any = { content_id: contentId }
+        const updateData: { content_id: string; classification?: string } = { content_id: contentId }
         if (classification) {
             updateData.classification = classification
         }
@@ -33,7 +33,8 @@ export async function PATCH(request: Request) {
         }
 
         return NextResponse.json({ success: true, updated: data.length })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

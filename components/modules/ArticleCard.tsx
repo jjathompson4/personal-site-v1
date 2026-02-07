@@ -31,8 +31,9 @@ export function ArticleCard({ article }: { article: Article }) {
             if (!response.ok) throw new Error('Failed to move article')
             toast.success(`Article moved to ${newTag}`)
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Request failed'
+            toast.error(message)
         }
     }
 
@@ -54,8 +55,9 @@ export function ArticleCard({ article }: { article: Article }) {
                 if (!response.ok) throw new Error('Failed to delete article')
                 toast.success('Article deleted')
                 router.refresh()
-            } catch (error: any) {
-                toast.error(error.message)
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Delete failed'
+                toast.error(message)
             }
         }
     }

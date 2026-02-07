@@ -55,8 +55,8 @@ export async function getGalleryBySlug(slug: string) {
     // Sort media by sort_order
     if (data.gallery_media) {
         data.media = data.gallery_media
-            .sort((a: any, b: any) => a.sort_order - b.sort_order)
-            .map((gm: any) => gm.media)
+            .sort((a: { sort_order: number }, b: { sort_order: number }) => a.sort_order - b.sort_order)
+            .map((gm: { media: unknown }) => gm.media)
         delete data.gallery_media
     }
 

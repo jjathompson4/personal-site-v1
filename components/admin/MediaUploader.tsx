@@ -1,10 +1,9 @@
 
 'use client'
 
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, X, Loader2, FileIcon, ImageIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Upload, Loader2, FileIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -62,7 +61,7 @@ export function MediaUploader({
                     try {
                         const errorJson = JSON.parse(errorText)
                         errorMessage = errorJson.error || errorMessage
-                    } catch (e) { }
+                    } catch { }
                     throw new Error(errorMessage)
                 }
 
@@ -71,9 +70,10 @@ export function MediaUploader({
                     onUploadComplete(data.media)
                 }
                 successCount++
-            } catch (error: any) {
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Upload failed'
                 console.error('Upload error:', error)
-                toast.error(`Failed to upload ${file.name}: ${error.message}`)
+                toast.error(`Failed to upload ${file.name}: ${message}`)
             }
         }
 
@@ -84,7 +84,7 @@ export function MediaUploader({
         // Cleanup previews and state
         setPreviews([])
         setUploading(false)
-    }, [bucket, moduleSlug, contentId, onUploadComplete])
+    }, [bucket, moduleSlug, contentId, classification, onUploadComplete])
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,

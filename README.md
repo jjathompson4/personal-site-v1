@@ -62,7 +62,7 @@ The project uses Supabase for data persistence.
 -   **Media Table**: Stores references to images and text files.
 -   **Storage**: Uses Supabase Storage buckets for assets.
 
-SQL migrations and schema definitions are located in `supabase/migrations/archive` for reference.
+SQL migrations live in `supabase/migrations/` (with older files preserved in `supabase/migrations/archive`).
 
 ## 🧪 Usage
 
@@ -70,6 +70,16 @@ SQL migrations and schema definitions are located in `supabase/migrations/archiv
 Run the unit test suite (Vitest):
 ```bash
 npm run test
+```
+
+Run tests in watch mode:
+```bash
+npm run test:watch
+```
+
+### Linting
+```bash
+npm run lint
 ```
 
 ### Production Build

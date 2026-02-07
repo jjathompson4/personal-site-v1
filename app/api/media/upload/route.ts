@@ -1,7 +1,6 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { Media } from '@/types/media'
 
 export async function POST(request: Request) {
     try {
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
             filePath = `${fileName}`
 
             // 1. Upload to Storage
-            const { data: storageData, error: storageError } = await supabase.storage
+            const { error: storageError } = await supabase.storage
                 .from(bucket)
                 .upload(filePath, file)
 
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
         // 3. Insert into Database
         const moduleTags = moduleSlug ? [moduleSlug] : []
 
-        const mediaData: any = {
+        const mediaData = {
             file_url: publicUrl,
             file_type: file ? (file.type.startsWith('image/') ? 'image' :
                 file.type === 'application/pdf' ? 'pdf' :
@@ -96,7 +95,8 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({ media: dbData })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

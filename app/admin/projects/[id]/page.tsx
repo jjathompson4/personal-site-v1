@@ -4,7 +4,6 @@
 import { useEffect, useState, use } from 'react'
 import { ProjectForm } from '@/components/admin/ProjectForm'
 import { Project } from '@/types/project'
-import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
 export default function EditProjectPage(props: { params: Promise<{ id: string }> }) {

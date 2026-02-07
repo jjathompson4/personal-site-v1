@@ -11,7 +11,7 @@ export async function getSettings() {
     if (error) throw error
 
     // Convert array to object
-    const settings: any = {}
+    const settings: Record<string, unknown> = {}
     data.forEach(({ key, value }) => {
         // Handle JSONB values - they might already be parsed or be strings
         try {
@@ -20,7 +20,7 @@ export async function getSettings() {
             } else {
                 settings[key] = value
             }
-        } catch (e) {
+        } catch {
             // If parsing fails, use the value as-is
             settings[key] = value
         }
@@ -29,7 +29,7 @@ export async function getSettings() {
     return settings as SiteSettings
 }
 
-export async function updateSetting(key: string, value: any) {
+export async function updateSetting(key: string, value: unknown) {
     const supabase = await createServerClient()
 
     const { error } = await supabase

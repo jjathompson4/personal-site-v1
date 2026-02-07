@@ -4,8 +4,7 @@ import { useTheme } from 'next-themes'
 import { useEffect, useState, useRef } from 'react'
 
 export function SolarGradient({ children }: { children: React.ReactNode }) {
-    const { theme } = useTheme()
-    const [mounted, setMounted] = useState(false)
+    useTheme()
     const [isMobile, setIsMobile] = useState(false)
 
     // Raw input values
@@ -26,8 +25,6 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
     const solarBgRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        setMounted(true)
-
         // Simple mobile check based on window width
         const checkMobile = () => {
             setIsMobile(window.innerWidth < 768)
@@ -40,8 +37,6 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
     }, [])
 
     useEffect(() => {
-        if (!mounted) return
-
         // Skip animation loop on mobile or if user prefers reduced motion
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
         const isReducedMotion = mediaQuery.matches
@@ -108,11 +103,7 @@ export function SolarGradient({ children }: { children: React.ReactNode }) {
             window.removeEventListener('mousemove', handleMouseMove)
             cancelAnimationFrame(animationFrameId)
         }
-    }, [mounted, isMobile])
-
-    if (!mounted) {
-        return <>{children}</>
-    }
+    }, [isMobile])
 
     return (
         <div className="flex-1 flex flex-col relative h-full w-full isolate">

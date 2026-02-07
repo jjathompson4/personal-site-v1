@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Menu, Edit3, Plus } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Module } from '@/types/module'
 import { useAdmin } from '@/components/providers/AdminProvider'
 import { Switch } from '@/components/ui/switch'
@@ -17,12 +17,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 
 interface NavigationProps {
     modules: Module[]
@@ -30,13 +24,14 @@ interface NavigationProps {
 
 export function Navigation({ modules }: NavigationProps) {
     const pathname = usePathname()
+    const searchParams = useSearchParams()
     const [open, setOpen] = useState(false)
-    const [mounted, setMounted] = useState(false)
     const { isAdmin, isEditMode, setIsEditMode } = useAdmin()
+    const currentTab = searchParams.get('tab') || 'all'
+    const isHome = pathname === '/'
 
-    useEffect(() => {
-        setMounted(true)
-    }, [])
+    // Reserved for future dynamic nav sections based on module config.
+    void modules
 
 
     return (
@@ -47,7 +42,7 @@ export function Navigation({ modules }: NavigationProps) {
                     href="/"
                     className={cn(
                         "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        pathname === "/" && !usePathname().includes('tab=')
+                        isHome && currentTab === 'all'
                             ? "text-foreground bg-muted/50"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
@@ -59,7 +54,7 @@ export function Navigation({ modules }: NavigationProps) {
                     href="/?tab=professional"
                     className={cn(
                         "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        pathname === "/" && usePathname().includes('tab=professional')
+                        isHome && currentTab === 'professional'
                             ? "text-foreground bg-muted/50"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
@@ -71,7 +66,7 @@ export function Navigation({ modules }: NavigationProps) {
                     href="/?tab=personal"
                     className={cn(
                         "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        pathname === "/" && usePathname().includes('tab=personal')
+                        isHome && currentTab === 'personal'
                             ? "text-foreground bg-muted/50"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
@@ -125,7 +120,7 @@ export function Navigation({ modules }: NavigationProps) {
                             onClick={() => setOpen(false)}
                             className={cn(
                                 "text-2xl font-bold transition-colors hover:text-primary",
-                                pathname === "/" && !usePathname().includes('tab=') ? "text-primary" : "text-foreground"
+                                isHome && currentTab === 'all' ? "text-primary" : "text-foreground"
                             )}
                         >
                             All Activity
@@ -136,7 +131,7 @@ export function Navigation({ modules }: NavigationProps) {
                             onClick={() => setOpen(false)}
                             className={cn(
                                 "text-2xl font-bold transition-colors hover:text-primary",
-                                pathname === "/" && usePathname().includes('tab=professional') ? "text-primary" : "text-foreground"
+                                isHome && currentTab === 'professional' ? "text-primary" : "text-foreground"
                             )}
                         >
                             Professional
@@ -147,7 +142,7 @@ export function Navigation({ modules }: NavigationProps) {
                             onClick={() => setOpen(false)}
                             className={cn(
                                 "text-2xl font-bold transition-colors hover:text-primary",
-                                pathname === "/" && usePathname().includes('tab=personal') ? "text-primary" : "text-foreground"
+                                isHome && currentTab === 'personal' ? "text-primary" : "text-foreground"
                             )}
                         >
                             Personal

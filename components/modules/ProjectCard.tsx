@@ -31,8 +31,9 @@ export function ProjectCard({ project }: { project: Project }) {
             if (!response.ok) throw new Error('Failed to update project status')
             toast.success(`Project moved to ${newStatus}`)
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Request failed'
+            toast.error(message)
         }
     }
 
@@ -53,8 +54,9 @@ export function ProjectCard({ project }: { project: Project }) {
                 if (!response.ok) throw new Error('Failed to delete project')
                 toast.success('Project deleted')
                 router.refresh()
-            } catch (error: any) {
-                toast.error(error.message)
+            } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Delete failed'
+                toast.error(message)
             }
         }
     }

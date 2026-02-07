@@ -1,6 +1,5 @@
 'use client'
 
-import { Media } from '@/types/media'
 import { PhotoGrid } from '@/components/modules/PhotoGrid'
 import { JournalUpdate } from '@/components/modules/JournalUpdate'
 import { LucideIcon, Pencil, Save, X, Trash2, Loader2, MoreHorizontal, Briefcase, User, FileText } from 'lucide-react'
@@ -81,8 +80,9 @@ export function ContentStream({
             toast.success('Text content updated')
             setEditingId(null)
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to save content'
+            toast.error(message)
         } finally {
             setIsSaving(false)
         }
@@ -104,8 +104,9 @@ export function ContentStream({
             if (!res.ok) throw new Error('Failed to delete')
             toast.success('Post deleted')
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to delete'
+            toast.error(message)
         } finally {
             setIsDeleting(null)
         }
@@ -125,8 +126,9 @@ export function ContentStream({
             if (!res.ok) throw new Error('Failed to update visibility')
             toast.success(`Moved to ${newClassification}`)
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to update visibility'
+            toast.error(message)
         }
     }
 

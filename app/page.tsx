@@ -1,11 +1,10 @@
 import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
 import { createServerClient } from '@/lib/supabase/server'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
 
 import matter from 'gray-matter'
-import { Suspense, cache } from 'react'
+import { cache } from 'react'
 
 async function getAllMedia() {
     const supabase = await createServerClient()
@@ -85,7 +84,7 @@ export default async function HomePage({
         textContents.set(file.id, content)
     }))
 
-    let stream = buildStream(filteredMedia, textContents)
+    const stream = buildStream(filteredMedia, textContents)
 
     // Inject Resume if Professional filter is active
     if (tab === 'professional' || tab === 'work') {

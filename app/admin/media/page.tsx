@@ -3,12 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MediaUploader } from '@/components/admin/MediaUploader'
 import { Media } from '@/types/media'
+import type { Module } from '@/types/module'
 import { createClient } from '@/lib/supabase/client'
-import Image from 'next/image'
-import Link from 'next/link'
 import {
-    Loader2, Trash2, FileText, Film, Layout, Plus, MoreVertical, Check,
-    Pencil, Eye, Lock, EyeOff, Folder, FolderOpen, Inbox, Search, Upload, Save, ArrowDownAZ
+    Loader2, Trash2, Plus, Folder, FolderOpen, Inbox, Search, Upload, Save, ArrowDownAZ
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -26,7 +24,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 
@@ -51,7 +48,7 @@ import { SortableMediaItem } from '@/components/admin/sortable/SortableMediaItem
 export default function MediaLibraryPage() {
     // --- State ---
     const [media, setMedia] = useState<Media[]>([])
-    const [modules, setModules] = useState<any[]>([])
+    const [modules, setModules] = useState<Module[]>([])
     const [loading, setLoading] = useState(true)
 
     // Navigation State
@@ -60,7 +57,6 @@ export default function MediaLibraryPage() {
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<string[]>([])
-    const [lastSelectedId, setLastSelectedId] = useState<string | null>(null)
 
     // Upload State
     const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
@@ -147,7 +143,6 @@ export default function MediaLibraryPage() {
         } else {
             setSelectedIds([id])
         }
-        setLastSelectedId(id)
     }
 
     const handleAssignModule = async (targetSlug: string) => {
@@ -175,7 +170,7 @@ export default function MediaLibraryPage() {
             if (!response.ok) throw new Error('Failed to update')
             toast.success(`Moved items`)
             setSelectedIds([])
-        } catch (error) {
+        } catch {
             setMedia(previousMedia)
             toast.error('Failed to move items')
         }
@@ -208,7 +203,7 @@ export default function MediaLibraryPage() {
             if (!response.ok) throw new Error('Failed to update')
             toast.success(`Copied items`)
             setSelectedIds([])
-        } catch (error) {
+        } catch {
             setMedia(previousMedia)
             toast.error('Failed to copy items')
         }
@@ -231,7 +226,7 @@ export default function MediaLibraryPage() {
             if (!response.ok) throw new Error('Failed to delete')
             toast.success(`Deleted items`)
             setSelectedIds([])
-        } catch (error: any) {
+        } catch {
             setMedia(previousMedia)
             toast.error('Failed to delete items')
         }
@@ -253,8 +248,6 @@ export default function MediaLibraryPage() {
 
                 if (oldIndex === -1 || newIndex === -1) return items // Should not happen
 
-                const newFiltered = arrayMove(filteredMedia, oldIndex, newIndex)
-
                 // Now we need to update 'items' (global state) to reflect this new local order.
                 // We map over 'items', and if the item exists in 'newFiltered', we replace it? 
                 // Or easier: we just extract the IDs from newFiltered and re-assign sort_orders.
@@ -270,11 +263,6 @@ export default function MediaLibraryPage() {
                 // Or simply reorder the subset in the global array. 
                 // Simpler approach for now:
                 // Just Replace the subset in the global array with the new subset.
-
-                const newGlobal = [...items]
-                // Remove all items that are in the filtered list
-                const filteredIds = new Set(filteredMedia.map(m => m.id))
-                const keptItems = newGlobal.filter(m => !filteredIds.has(m.id))
 
                 // Ideally we want to keep them 'in place' relative to others?
                 // No, reordering usually implies we are defining the absolute order for this module.
@@ -321,7 +309,7 @@ export default function MediaLibraryPage() {
 
             toast.success('Order saved!')
             setHasUnsavedOrder(false)
-        } catch (e) {
+        } catch {
             toast.error('Failed to save order')
         } finally {
             setIsSavingOrder(false)

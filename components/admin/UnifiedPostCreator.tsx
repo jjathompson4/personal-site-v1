@@ -6,13 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
 import { MediaUploader } from '@/components/admin/MediaUploader'
 import { Media } from '@/types/media'
-import { Loader2, X, Plus, Image as ImageIcon, FileText, Send, User, Briefcase, Globe } from 'lucide-react'
+import { Loader2, X, Plus, Image as ImageIcon, FileText, User, Briefcase, Globe } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 
 interface UnifiedPostCreatorProps {
     initialData?: {
@@ -125,9 +123,10 @@ export function UnifiedPostCreator({ initialData }: UnifiedPostCreatorProps) {
                 router.push('/')
             }
             router.refresh()
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to save post'
             console.error(error)
-            toast.error(error.message || 'Failed to save post')
+            toast.error(message)
         } finally {
             setLoading(false)
         }

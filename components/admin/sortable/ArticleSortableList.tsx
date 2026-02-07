@@ -103,8 +103,9 @@ export function ArticleSortableList({ initialArticles }: { initialArticles: Arti
 
             toast.success('Article order updated')
             setHasUnsavedChanges(false)
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to save order'
+            toast.error(message)
         } finally {
             setIsSaving(false)
         }

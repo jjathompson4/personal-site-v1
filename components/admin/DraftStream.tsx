@@ -44,7 +44,7 @@ export function DraftStream({ initialStream }: DraftStreamProps) {
                 return true
             }))
             router.refresh()
-        } catch (error) {
+        } catch {
             toast.error('Failed to publish')
         }
     }
@@ -69,7 +69,7 @@ export function DraftStream({ initialStream }: DraftStreamProps) {
                 return true
             }))
             router.refresh()
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete')
         }
     }

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import * as Icons from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -33,7 +34,8 @@ export function IconPicker({ icon, onChange, label }: IconPickerProps) {
         )
     }, [search])
 
-    const IconComponent = (Icons as any)[icon] || Icons.HelpCircle
+    const iconMap = Icons as Record<string, LucideIcon>
+    const IconComponent = iconMap[icon] || Icons.HelpCircle
 
     return (
         <div className="space-y-2">
@@ -55,7 +57,7 @@ export function IconPicker({ icon, onChange, label }: IconPickerProps) {
                         <ScrollArea className="h-64">
                             <div className="grid grid-cols-4 gap-2">
                                 {filteredIcons.map((iconName) => {
-                                    const Icon = (Icons as any)[iconName]
+                                    const Icon = iconMap[iconName]
                                     if (!Icon) return null
 
                                     return (

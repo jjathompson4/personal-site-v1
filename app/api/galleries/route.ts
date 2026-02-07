@@ -38,12 +38,13 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json(data)
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const supabase = await createServerClient()
 
@@ -62,7 +63,8 @@ export async function GET(request: Request) {
         }
 
         return NextResponse.json(data)
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

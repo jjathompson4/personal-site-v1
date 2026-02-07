@@ -7,7 +7,7 @@ export interface Article {
     date: string
     content: string
     tags: string[]
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export async function getArticleBySlug(slug: string, moduleTag: string): Promise<Article | null> {

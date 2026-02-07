@@ -32,7 +32,7 @@ export async function POST(
             .order('sort_order', { ascending: false })
             .limit(1)
 
-        let startOrder = (existing?.[0]?.sort_order || 0) + 1
+        const startOrder = (existing?.[0]?.sort_order || 0) + 1
 
         const rows = media_ids.map((media_id, index) => ({
             gallery_id: id,
@@ -50,8 +50,9 @@ export async function POST(
         }
 
         return NextResponse.json({ success: true })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 
@@ -79,7 +80,8 @@ export async function DELETE(
         if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
         return NextResponse.json({ success: true })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

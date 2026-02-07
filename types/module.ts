@@ -8,7 +8,7 @@ export interface Module {
     enabled: boolean
     sort_order: number
     category: 'work' | 'personal'
-    config: Record<string, any>
+    config: Record<string, unknown>
     created_at: string
     updated_at: string
 }

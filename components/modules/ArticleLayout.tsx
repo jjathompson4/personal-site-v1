@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Article } from '@/types/article'
 import { useAdmin } from '@/components/providers/AdminProvider'
 import { Button } from '@/components/ui/button'
-import { Edit2, Save, X, Trash2, Loader2 } from 'lucide-react'
+import { Edit2, Save, X, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { cn } from '@/lib/utils'
@@ -56,8 +56,9 @@ export function ArticleLayout({ article }: { article: Article }) {
             toast.success('Article updated successfully')
             setIsEditing(false)
             router.refresh()
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to save changes'
+            toast.error(message)
         } finally {
             setIsSaving(false)
         }

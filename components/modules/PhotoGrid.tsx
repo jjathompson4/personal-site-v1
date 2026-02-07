@@ -3,7 +3,7 @@
 
 import { Media } from '@/types/media'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -18,27 +18,25 @@ export function PhotoGrid({ photos, className }: PhotoGridProps) {
 
     // Derived state for navigation
     const currentIndex = selectedPhoto ? photos.findIndex(p => p.id === selectedPhoto.id) : -1
-    const hasNext = currentIndex < photos.length - 1
-    const hasPrev = currentIndex > 0
 
     // Handlers
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         if (currentIndex < photos.length - 1) {
             setSelectedPhoto(photos[currentIndex + 1])
         } else {
             // Loop to start
             setSelectedPhoto(photos[0])
         }
-    }
+    }, [currentIndex, photos])
 
-    const handlePrev = () => {
+    const handlePrev = useCallback(() => {
         if (currentIndex > 0) {
             setSelectedPhoto(photos[currentIndex - 1])
         } else {
             // Loop to end
             setSelectedPhoto(photos[photos.length - 1])
         }
-    }
+    }, [currentIndex, photos])
 
     // Keyboard navigation
     useEffect(() => {
@@ -52,7 +50,7 @@ export function PhotoGrid({ photos, className }: PhotoGridProps) {
 
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [selectedPhoto, photos])
+    }, [selectedPhoto, handleNext, handlePrev])
 
     if (!photos || photos.length === 0) {
         return (
