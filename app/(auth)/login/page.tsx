@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 function LoginForm() {
-    const router = useRouter()
     const searchParams = useSearchParams()
     const redirectTo = searchParams.get('redirectTo') || '/admin'
 
@@ -34,8 +33,11 @@ function LoginForm() {
             setError(error.message)
             setLoading(false)
         } else {
-            router.push(redirectTo)
-            router.refresh()
+            // Full page reload so the browser sends all freshly-set Supabase
+            // auth cookies on the next request. Client-side router.push can
+            // race ahead before @supabase/ssr finishes writing the cookies,
+            // causing the server to see no session and redirect back to /login.
+            window.location.href = redirectTo
         }
     }
 
