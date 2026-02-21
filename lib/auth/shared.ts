@@ -8,5 +8,6 @@ export const ADMIN_EMAILS: string[] = process.env.ADMIN_EMAIL
 
 export function isAdminUser(user: User | null) {
     if (!user || !user.email) return false
-    return ADMIN_EMAILS.includes(user.email)
+    const email = user.email.toLowerCase()
+    return ADMIN_EMAILS.some(adminEmail => adminEmail.toLowerCase() === email)
 }
