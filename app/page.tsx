@@ -2,6 +2,7 @@ import { Header } from '@/components/layout/Header'
 import { createServerClient } from '@/lib/supabase/server'
 import { ContentStream } from '@/components/modules/ContentStream'
 import { buildStream } from '@/lib/stream'
+import { getSettings } from '@/lib/supabase/queries/settings'
 
 import matter from 'gray-matter'
 import { cache } from 'react'
@@ -41,8 +42,11 @@ export default async function HomePage({
 }) {
     const { tab = 'all', tag, q } = await searchParams
 
-    // 1. Fetch only Media
-    const allMediaRaw = await getAllMedia()
+    // Fetch settings and media in parallel
+    const [settings, allMediaRaw] = await Promise.all([
+        getSettings().catch(() => null),
+        getAllMedia(),
+    ])
 
     // Filter out drafts from public view
     const allMedia = allMediaRaw.filter(m => m.classification !== 'draft')
@@ -76,7 +80,6 @@ export default async function HomePage({
 
     // 3. Group and Build Stream
     const textContents = new Map<string, string>()
-    // Only fetch MD content if text_content is missing
     const textFilesNeedFetch = filteredMedia.filter(m => m.file_type === 'text' && !m.text_content)
 
     await Promise.all(textFilesNeedFetch.map(async (file) => {
@@ -91,19 +94,27 @@ export default async function HomePage({
         stream.unshift({ type: 'resume', timestamp: new Date().toISOString(), classification: 'pro' })
     }
 
+    // Pull display values from settings with sensible fallbacks
+    const siteName = settings?.site_title || settings?.about?.name || 'Jeff Thompson'
+    const tagline = settings?.site_description || settings?.about?.title || 'Lighting Design & Software Craft'
+    const bio = settings?.about?.bio || null
+
     return (
         <div className="flex min-h-screen flex-col">
             <Header />
             <main className="flex-1 py-8 md:py-12 relative">
                 <div className="w-full max-w-4xl mx-auto px-4 space-y-12">
 
-                    {/* Compact Hero */}
-                    <div className="text-center space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight">Jeff Thompson</h1>
-                        <p className="text-muted-foreground">Lighting Design & Software Craft</p>
+                    {/* Hero */}
+                    <div className="text-center space-y-3">
+                        <h1 className="text-3xl font-bold tracking-tight">{siteName}</h1>
+                        <p className="text-muted-foreground">{tagline}</p>
+                        {bio && (
+                            <p className="text-sm text-muted-foreground/80 max-w-lg mx-auto leading-relaxed">
+                                {bio}
+                            </p>
+                        )}
                     </div>
-
-
 
                     {/* The Journal Stream */}
                     <div className="relative">
@@ -128,10 +139,10 @@ export default async function HomePage({
                         )}
                     </div>
 
-                    {/* Footer Bio */}
+                    {/* Footer */}
                     <div className="text-center pt-24 pb-12 opacity-50">
                         <p className="text-sm font-medium tracking-widest uppercase">
-                            Jeff Thompson — © 2024
+                            {siteName} — © {new Date().getFullYear()}
                         </p>
                     </div>
 

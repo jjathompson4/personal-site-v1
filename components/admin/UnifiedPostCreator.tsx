@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,8 @@ import { Media } from '@/types/media'
 import { Loader2, X, Plus, Image as ImageIcon, FileText, User, Briefcase, Globe } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
+
+const CLASSIFICATION_KEY = 'admin_last_classification'
 
 interface UnifiedPostCreatorProps {
     initialData?: {
@@ -27,13 +29,28 @@ export function UnifiedPostCreator({ initialData }: UnifiedPostCreatorProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
 
+    const defaultClassification = (): string => {
+        if (initialData?.classification) return initialData.classification
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem(CLASSIFICATION_KEY) || 'draft'
+        }
+        return 'draft'
+    }
+
     const [formData, setFormData] = useState({
         title: initialData?.title || '',
         content: initialData?.text_content || '',
-        classification: initialData?.classification || 'draft',
+        classification: defaultClassification(),
         cover_image: initialData?.file_url || '',
         media_items: (initialData?.media || []) as Media[]
     })
+
+    // Keep localStorage in sync when classification changes (new posts only)
+    useEffect(() => {
+        if (!initialData) {
+            localStorage.setItem(CLASSIFICATION_KEY, formData.classification)
+        }
+    }, [formData.classification, initialData])
 
     const handleUploadComplete = (media: Media) => {
         setFormData(prev => {

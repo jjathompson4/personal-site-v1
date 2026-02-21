@@ -1,6 +1,10 @@
 import { User } from '@supabase/supabase-js'
 
-export const ADMIN_EMAILS = ['jjathompson4@gmail.com']
+// Read from ADMIN_EMAIL env var (comma-separated for multiple admins).
+// Never hardcode email addresses in source — set ADMIN_EMAIL in .env.local.
+export const ADMIN_EMAILS: string[] = process.env.ADMIN_EMAIL
+    ? process.env.ADMIN_EMAIL.split(',').map(e => e.trim()).filter(Boolean)
+    : []
 
 export function isAdminUser(user: User | null) {
     if (!user || !user.email) return false

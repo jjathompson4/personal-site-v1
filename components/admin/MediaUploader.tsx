@@ -1,13 +1,15 @@
 
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload, Loader2, FileIcon } from 'lucide-react'
+import { Upload, Loader2, FileIcon, Clipboard } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { Media } from '@/types/media'
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 interface MediaUploaderProps {
     bucket?: 'photography' | 'projects'
@@ -28,10 +30,11 @@ export function MediaUploader({
 }: MediaUploaderProps) {
     const [uploading, setUploading] = useState(false)
     const [previews, setPreviews] = useState<{ file: File, preview: string }[]>([])
+    const [pasteHint, setPasteHint] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
 
-    const onDrop = useCallback(async (acceptedFiles: File[]) => {
-        // Create previews
-        const newPreviews = acceptedFiles.map(file => ({
+    const uploadFiles = useCallback(async (files: File[]) => {
+        const newPreviews = files.map(file => ({
             file,
             preview: URL.createObjectURL(file)
         }))
@@ -40,7 +43,7 @@ export function MediaUploader({
         setUploading(true)
         let successCount = 0
 
-        for (const file of acceptedFiles) {
+        for (const file of files) {
             try {
                 const formData = new FormData()
                 formData.append('file', file)
@@ -78,13 +81,40 @@ export function MediaUploader({
         }
 
         if (successCount > 0) {
-            toast.success(`Successfully uploaded ${successCount} file${successCount !== 1 ? 's' : ''}`)
+            toast.success(`Uploaded ${successCount} file${successCount !== 1 ? 's' : ''}`)
         }
 
-        // Cleanup previews and state
         setPreviews([])
         setUploading(false)
     }, [bucket, moduleSlug, contentId, classification, onUploadComplete])
+
+    const onDrop = useCallback(async (acceptedFiles: File[]) => {
+        await uploadFiles(acceptedFiles)
+    }, [uploadFiles])
+
+    // Global paste handler — intercept Cmd/Ctrl+V anywhere on the page when this uploader is mounted
+    useEffect(() => {
+        const handlePaste = async (e: ClipboardEvent) => {
+            if (uploading) return
+            const items = Array.from(e.clipboardData?.items ?? [])
+            const imageItems = items.filter(item => ALLOWED_IMAGE_TYPES.includes(item.type))
+            if (imageItems.length === 0) return
+
+            e.preventDefault()
+            const files = imageItems
+                .map(item => item.getAsFile())
+                .filter((f): f is File => f !== null)
+
+            if (files.length > 0) {
+                setPasteHint(true)
+                setTimeout(() => setPasteHint(false), 1500)
+                await uploadFiles(files)
+            }
+        }
+
+        window.addEventListener('paste', handlePaste)
+        return () => window.removeEventListener('paste', handlePaste)
+    }, [uploading, uploadFiles])
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -99,12 +129,13 @@ export function MediaUploader({
     })
 
     return (
-        <div className={cn("w-full", className)}>
+        <div className={cn("w-full", className)} ref={containerRef}>
             <div
                 {...getRootProps()}
                 className={cn(
                     "border-2 border-dashed rounded-lg p-8 transition-colors text-center cursor-pointer",
                     isDragActive ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
+                    pasteHint && "border-primary bg-primary/5",
                     uploading && "opacity-50 cursor-not-allowed"
                 )}
             >
@@ -112,21 +143,22 @@ export function MediaUploader({
                 <div className="flex flex-col items-center gap-3">
                     {uploading ? (
                         <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                    ) : pasteHint ? (
+                        <Clipboard className="h-10 w-10 text-primary" />
                     ) : (
                         <Upload className="h-10 w-10 text-muted-foreground" />
                     )}
                     <div className="space-y-1">
                         <p className="text-sm font-medium">
-                            {uploading ? 'Uploading...' : 'Drag & drop or click to upload'}
+                            {uploading ? 'Uploading...' : pasteHint ? 'Pasting image…' : 'Drag & drop, click, or paste (⌘V)'}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Images (PNG, JPG, WEBP) or PDF up to 10MB
+                            Images (PNG, JPG, WEBP) or PDF up to 20 MB
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* Preview Area for files currently being uploaded (optional, mostly for visual feedback during process) */}
             {previews.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {previews.map((item, index) => (
