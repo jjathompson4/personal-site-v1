@@ -26,7 +26,7 @@ export async function getSettings() {
         }
     })
 
-    return settings as SiteSettings
+    return settings as unknown as SiteSettings
 }
 
 export async function updateSetting(key: string, value: unknown) {

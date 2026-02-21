@@ -34,7 +34,7 @@ export function IconPicker({ icon, onChange, label }: IconPickerProps) {
         )
     }, [search])
 
-    const iconMap = Icons as Record<string, LucideIcon>
+    const iconMap = Icons as unknown as Record<string, LucideIcon>
     const IconComponent = iconMap[icon] || Icons.HelpCircle
 
     return (
