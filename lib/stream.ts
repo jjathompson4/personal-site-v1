@@ -75,6 +75,16 @@ export function buildStream(
     })
     flushPhotos()
 
-    // Sort the entire stream by timestamp DESC (Newest First)
-    return stream.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    // Sort by sort_order ASC first (admin-set custom order), then created_at DESC as tiebreaker.
+    // All items default to sort_order=0, so the tiebreaker keeps newest-first until admin reorders.
+    const getSortOrder = (item: StreamItem): number => {
+        if (item.type === 'text') return item.media.sort_order ?? 0
+        if (item.type === 'photos') return item.photos[0]?.sort_order ?? 0
+        return 0
+    }
+    return stream.sort((a, b) => {
+        const orderDiff = getSortOrder(a) - getSortOrder(b)
+        if (orderDiff !== 0) return orderDiff
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    })
 }

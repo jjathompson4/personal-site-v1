@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,8 @@ interface UnifiedPostCreatorProps {
 export function UnifiedPostCreator({ initialData }: UnifiedPostCreatorProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const insertPosRef = useRef<number>(0)
 
     const defaultClassification = (): string => {
         if (initialData?.classification) return initialData.classification
@@ -53,14 +55,26 @@ export function UnifiedPostCreator({ initialData }: UnifiedPostCreatorProps) {
     }, [formData.classification, initialData])
 
     const handleUploadComplete = (media: Media) => {
+        // Insert the image as markdown at the saved cursor position in the content textarea.
+        // This lets the admin place photos inline between paragraphs of text.
+        const snippet = `\n\n![](${media.file_url})\n\n`
+        const pos = insertPosRef.current
+
         setFormData(prev => {
-            const newMediaItems = [...prev.media_items, media]
-            // Automatically set first image as cover if not set
-            const newCover = prev.cover_image || media.file_url || ''
-            return {
-                ...prev,
-                cover_image: newCover,
-                media_items: newMediaItems
+            const before = prev.content.slice(0, pos)
+            const after = prev.content.slice(pos)
+            const newContent = before + snippet + after
+            // Advance cursor to after the inserted snippet for the next upload
+            insertPosRef.current = pos + snippet.length
+            return { ...prev, content: newContent }
+        })
+
+        // Restore focus and set cursor to after the inserted snippet
+        requestAnimationFrame(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus()
+                const newPos = pos + snippet.length
+                textareaRef.current.setSelectionRange(newPos, newPos)
             }
         })
     }
@@ -177,16 +191,20 @@ export function UnifiedPostCreator({ initialData }: UnifiedPostCreatorProps) {
                         <Label htmlFor="content">Content</Label>
                         <Textarea
                             id="content"
+                            ref={textareaRef}
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                            onSelect={(e) => { insertPosRef.current = (e.target as HTMLTextAreaElement).selectionStart }}
+                            onBlur={(e) => { insertPosRef.current = e.target.selectionStart }}
                             placeholder="Write something... (Markdown supported)"
                             className="min-h-[300px] resize-y font-sans text-base p-4 leading-relaxed"
                             required
                         />
+                        <p className="text-xs text-muted-foreground">Click in the text where you want a photo, then upload below — it will be inserted at that spot.</p>
                     </div>
 
                     <div className="space-y-4">
-                        <Label>Photos / Media</Label>
+                        <Label>Insert Photo</Label>
                         <MediaUploader
                             bucket="projects"
                             classification={formData.classification}
