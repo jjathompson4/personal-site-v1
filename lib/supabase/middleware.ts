@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isAdminUser } from '@/lib/auth/shared'
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
@@ -40,8 +41,12 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    // Redirect authenticated users away from login
-    if (request.nextUrl.pathname === '/login' && user) {
+    // Redirect authenticated admin users away from login.
+    // Only redirect if the user is actually an admin — otherwise an
+    // authenticated non-admin user would be bounced between /login and
+    // /admin in an infinite loop (middleware sends them to /admin,
+    // requireAuth() sends them back to /login, repeat).
+    if (request.nextUrl.pathname === '/login' && user && isAdminUser(user)) {
         const url = request.nextUrl.clone()
         url.pathname = '/admin'
         return NextResponse.redirect(url)
