@@ -34,8 +34,7 @@ export async function updateSetting(key: string, value: unknown) {
 
     const { error } = await supabase
         .from('site_settings')
-        .update({ value: JSON.stringify(value) })
-        .eq('key', key)
+        .upsert({ key, value: JSON.stringify(value) }, { onConflict: 'key' })
 
     if (error) throw error
     return true
@@ -47,8 +46,7 @@ export async function updateSettings(settings: Partial<SiteSettings>) {
     const updates = Object.entries(settings).map(([key, value]) =>
         supabase
             .from('site_settings')
-            .update({ value: JSON.stringify(value) })
-            .eq('key', key)
+            .upsert({ key, value: JSON.stringify(value) }, { onConflict: 'key' })
     )
 
     const results = await Promise.all(updates)

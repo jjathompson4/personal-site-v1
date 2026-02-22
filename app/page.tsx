@@ -95,8 +95,8 @@ export default async function HomePage({
     }
 
     // Pull display values from settings with sensible fallbacks
-    const siteName = settings?.site_title || settings?.about?.name || 'Jeff Thompson'
-    const tagline = settings?.site_description || settings?.about?.title || 'Lighting Design & Software Craft'
+    const siteName = settings?.site_title || 'Jeff Thompson'
+    const tagline = settings?.site_description || 'Lighting Design & Software Craft'
     const bio = settings?.about?.bio || null
 
     return (
@@ -120,8 +120,8 @@ export default async function HomePage({
                     <div className="relative">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-4 flex-1">
-                                <h2 className="text-xl font-semibold capitalize">
-                                    {tab === 'all' ? 'The Stream' : `${tab} Stream`}
+                                <h2 className="text-xl font-semibold">
+                                    {tab === 'all' ? 'All' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                 </h2>
                                 <div className="h-px bg-border flex-1" />
                             </div>
@@ -143,6 +143,8 @@ export default async function HomePage({
                     <div className="text-center pt-24 pb-12 opacity-50">
                         <p className="text-sm font-medium tracking-widest uppercase">
                             {siteName} — © {new Date().getFullYear()}
+                            <span className="mx-2">·</span>
+                            <a href="/login" className="hover:text-foreground transition-colors">Admin</a>
                         </p>
                     </div>
 

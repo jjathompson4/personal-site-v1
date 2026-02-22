@@ -279,6 +279,14 @@ export function ContentStream({
 
     return (
         <div className="w-full">
+            {/* Admin edit mode instruction banner */}
+            {showAdminActions && (
+                <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 border border-border/50 rounded-lg px-4 py-2.5">
+                    <GripVertical className="h-3.5 w-3.5 shrink-0" />
+                    <span>Drag items to reorder. Hover for options — edit, move, or remove from site.</span>
+                </div>
+            )}
+
             {/* Sort controls — public sort toggle + admin save order button */}
             {showSortControls && (
                 <div className="flex items-center gap-2 mb-10">

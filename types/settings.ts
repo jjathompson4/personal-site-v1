@@ -8,8 +8,6 @@ export interface SiteSettings {
 
 export interface AboutSection {
     photo: string | null
-    name: string
-    title: string
     bio: string
     social_links: SocialLink[]
 }

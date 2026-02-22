@@ -13,8 +13,6 @@ interface SettingsState {
     site_description: string
     email: string
     about: {
-        name: string
-        title: string
         bio: string
         // Preserved passthrough — not editable here but must not be lost on save
         photo?: string | null
@@ -27,7 +25,7 @@ const EMPTY: SettingsState = {
     site_title: '',
     site_description: '',
     email: '',
-    about: { name: '', title: '', bio: '' },
+    about: { bio: '' },
 }
 
 export default function SettingsPage() {
@@ -44,8 +42,6 @@ export default function SettingsPage() {
                     site_description: s?.site_description ?? '',
                     email: s?.email ?? '',
                     about: {
-                        name: s?.about?.name ?? '',
-                        title: s?.about?.title ?? '',
                         bio: s?.about?.bio ?? '',
                         // Preserve fields we don't edit so they aren't wiped on save
                         photo: s?.about?.photo ?? null,
@@ -101,30 +97,41 @@ export default function SettingsPage() {
                 </Button>
             </div>
 
-            {/* Site */}
             <section className="space-y-4 p-6 rounded-xl border bg-card">
-                <h3 className="font-semibold text-lg">Site Identity</h3>
+                <h3 className="font-semibold text-lg">Public Site</h3>
 
                 <div className="space-y-2">
-                    <Label htmlFor="site_title">Site / Name</Label>
+                    <Label htmlFor="site_title">Name</Label>
                     <Input
                         id="site_title"
                         value={settings.site_title}
                         onChange={e => set('site_title', e.target.value)}
                         placeholder="Jeff Thompson"
                     />
-                    <p className="text-xs text-muted-foreground">Shown in the header and browser tab.</p>
+                    <p className="text-xs text-muted-foreground">Shown in the header, hero, and browser tab.</p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="site_description">Tagline / Subtitle</Label>
+                    <Label htmlFor="site_description">Tagline</Label>
                     <Input
                         id="site_description"
                         value={settings.site_description}
                         onChange={e => set('site_description', e.target.value)}
                         placeholder="Lighting Design & Software Craft"
                     />
-                    <p className="text-xs text-muted-foreground">One-liner shown beneath your name on the homepage.</p>
+                    <p className="text-xs text-muted-foreground">One-liner beneath your name on the homepage.</p>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="about_bio">Bio</Label>
+                    <Textarea
+                        id="about_bio"
+                        value={settings.about.bio}
+                        onChange={e => setAbout('bio', e.target.value)}
+                        placeholder="A sentence or two introducing yourself and what visitors will find here…"
+                        className="min-h-[100px] resize-y"
+                    />
+                    <p className="text-xs text-muted-foreground">1–3 sentence intro shown above the stream.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -136,46 +143,6 @@ export default function SettingsPage() {
                         onChange={e => set('email', e.target.value)}
                         placeholder="you@example.com"
                     />
-                </div>
-            </section>
-
-            {/* About / Hero Bio */}
-            <section className="space-y-4 p-6 rounded-xl border bg-card">
-                <h3 className="font-semibold text-lg">Homepage Bio</h3>
-                <p className="text-sm text-muted-foreground">
-                    This appears as a short intro above the content stream, so new visitors know what the site is about.
-                </p>
-
-                <div className="space-y-2">
-                    <Label htmlFor="about_name">Display Name</Label>
-                    <Input
-                        id="about_name"
-                        value={settings.about.name}
-                        onChange={e => setAbout('name', e.target.value)}
-                        placeholder="Jeff Thompson"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="about_title">Professional Title</Label>
-                    <Input
-                        id="about_title"
-                        value={settings.about.title}
-                        onChange={e => setAbout('title', e.target.value)}
-                        placeholder="Lighting Designer & Software Engineer"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="about_bio">Bio / Intro</Label>
-                    <Textarea
-                        id="about_bio"
-                        value={settings.about.bio}
-                        onChange={e => setAbout('bio', e.target.value)}
-                        placeholder="A sentence or two introducing yourself and what visitors will find here…"
-                        className="min-h-[100px] resize-y"
-                    />
-                    <p className="text-xs text-muted-foreground">Keep it to 1–3 sentences. Markdown is not rendered here.</p>
                 </div>
             </section>
 
