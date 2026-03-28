@@ -23,7 +23,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<PostWithT
     .from('posts')
     .select(POST_WITH_TAGS_SELECT)
     .eq('published', true)
-    .order('published_at', { ascending: false })
+    .order('sort_order', { ascending: true })
 
   if (search) {
     query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%,excerpt.ilike.%${search}%`)
@@ -79,7 +79,7 @@ export async function getAllPostsAdmin(): Promise<PostWithTags[]> {
   const { data, error } = await supabase
     .from('posts')
     .select(POST_WITH_TAGS_SELECT)
-    .order('created_at', { ascending: false })
+    .order('sort_order', { ascending: true })
 
   if (error) {
     console.error('Error fetching all posts:', error.message)

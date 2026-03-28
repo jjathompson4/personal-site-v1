@@ -6,6 +6,24 @@ import { moods, moodKeys } from '@/components/atmosphere/moods'
 import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import type { MoodKey } from '@/components/atmosphere/moods'
 import type { ResumeEntry, ResumeSection } from '@/types/resume'
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    KeyboardSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+    arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical } from 'lucide-react'
 
 // ─── Field config per section ─────────────────────────────────────────────────
 
@@ -108,7 +126,7 @@ function EntryForm({
 
 // ─── Entry row ────────────────────────────────────────────────────────────────
 
-function EntryRow({
+function SortableEntryRow({
   entry,
   section,
   onEdit,
@@ -119,20 +137,33 @@ function EntryRow({
   onEdit: () => void
   onDelete: () => void
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: entry.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
+
   const primary = entry.title ?? '—'
   const secondary = [entry.subtitle, entry.location].filter(Boolean).join(', ')
   const tertiary = entry.date_range
 
   return (
-    <div className="flex items-start justify-between gap-4 py-2.5 group">
-      <div className="min-w-0">
-        <p className="text-sm font-medium truncate">{primary}</p>
-        {secondary && <p className="text-xs text-muted-foreground mt-0.5">{secondary}</p>}
-        {tertiary && <p className="text-xs text-muted-foreground/60">{tertiary}</p>}
-      </div>
-      <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={onEdit} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Edit</button>
-        <button onClick={onDelete} className="text-xs text-muted-foreground hover:text-red-400 transition-colors">Delete</button>
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 py-2.5 group">
+      <button
+        {...attributes}
+        {...listeners}
+        className="touch-none text-muted-foreground/30 hover:text-muted-foreground transition-colors cursor-grab active:cursor-grabbing shrink-0"
+        aria-label="Drag to reorder"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate">{primary}</p>
+          {secondary && <p className="text-xs text-muted-foreground mt-0.5">{secondary}</p>}
+          {tertiary && <p className="text-xs text-muted-foreground/60">{tertiary}</p>}
+        </div>
+        <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={onEdit} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Edit</button>
+          <button onClick={onDelete} className="text-xs text-muted-foreground hover:text-red-400 transition-colors">Delete</button>
+        </div>
       </div>
     </div>
   )
@@ -195,16 +226,32 @@ function SectionBlock({
   onAdd,
   onUpdate,
   onDelete,
+  onReorder,
 }: {
   section: ResumeSection
   entries: ResumeEntry[]
   onAdd: (section: ResumeSection, data: Partial<ResumeEntry>) => Promise<void>
   onUpdate: (id: string, data: Partial<ResumeEntry>) => Promise<void>
   onDelete: (id: string) => Promise<void>
+  onReorder: (section: ResumeSection, reordered: ResumeEntry[]) => Promise<void>
 }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const isIdentity = section === 'identity'
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = entries.findIndex(e => e.id === active.id)
+    const newIndex = entries.findIndex(e => e.id === over.id)
+    const reordered = arrayMove(entries, oldIndex, newIndex)
+    await onReorder(section, reordered)
+  }
 
   return (
     <div className="space-y-3">
@@ -223,28 +270,32 @@ function SectionBlock({
       </div>
 
       <div className={cn('space-y-1', entries.length > 0 && !adding && 'divide-y divide-foreground/6')}>
-        {entries.map((entry) =>
-          editingId === entry.id ? (
-            <EntryForm
-              key={entry.id}
-              entry={entry}
-              section={section}
-              onSave={async (data) => {
-                await onUpdate(entry.id, data)
-                setEditingId(null)
-              }}
-              onCancel={() => setEditingId(null)}
-            />
-          ) : (
-            <EntryRow
-              key={entry.id}
-              entry={entry}
-              section={section}
-              onEdit={() => setEditingId(entry.id)}
-              onDelete={() => onDelete(entry.id)}
-            />
-          )
-        )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={entries.map(e => e.id)} strategy={verticalListSortingStrategy}>
+            {entries.map((entry) =>
+              editingId === entry.id ? (
+                <EntryForm
+                  key={entry.id}
+                  entry={entry}
+                  section={section}
+                  onSave={async (data) => {
+                    await onUpdate(entry.id, data)
+                    setEditingId(null)
+                  }}
+                  onCancel={() => setEditingId(null)}
+                />
+              ) : (
+                <SortableEntryRow
+                  key={entry.id}
+                  entry={entry}
+                  section={section}
+                  onEdit={() => setEditingId(entry.id)}
+                  onDelete={() => onDelete(entry.id)}
+                />
+              )
+            )}
+          </SortableContext>
+        </DndContext>
 
         {adding && (
           <EntryForm
@@ -328,6 +379,19 @@ export function ResumeEditor({ initialEntries }: { initialEntries: ResumeEntry[]
     setEntries((prev) => prev.filter((e) => e.id !== id))
   }
 
+  const handleReorder = async (section: ResumeSection, reordered: ResumeEntry[]) => {
+    // Optimistically update local state
+    setEntries((prev) => {
+      const others = prev.filter((e) => e.section !== section)
+      return [...others, ...reordered]
+    })
+    await fetch('/api/resume/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: reordered.map((e) => e.id) }),
+    })
+  }
+
   return (
     <div className="space-y-10 max-w-2xl">
       {error && <p className="text-sm text-red-400">{error}</p>}
@@ -342,6 +406,7 @@ export function ResumeEditor({ initialEntries }: { initialEntries: ResumeEntry[]
           onAdd={handleAdd}
           onUpdate={handleUpdate}
           onDelete={handleDelete}
+          onReorder={handleReorder}
         />
       ))}
     </div>
