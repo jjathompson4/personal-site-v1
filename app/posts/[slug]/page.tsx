@@ -29,7 +29,7 @@ export default async function PostPage({
         <div className="flex min-h-screen flex-col">
             <MoodSetter mood={customPalette ? undefined : mood} palette={customPalette} />
 
-            <main className="flex-1 pt-28 md:pt-32 pb-32">
+            <main className="flex-1 pt-28 md:pt-32 pb-8">
                 <div className="w-full max-w-2xl mx-auto px-4 space-y-10">
 
                     {/* Back link */}
