@@ -3,16 +3,20 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { Atmosphere } from './Atmosphere'
 import { defaultMood } from './moods'
-import type { MoodKey } from './moods'
+import type { MoodKey, MoodPalette } from './moods'
 
 interface AtmosphereContextValue {
   mood: MoodKey
   setMood: (mood: MoodKey) => void
+  customPalette: MoodPalette | null
+  setCustomPalette: (palette: MoodPalette | null) => void
 }
 
 const AtmosphereContext = createContext<AtmosphereContextValue>({
   mood: defaultMood,
   setMood: () => {},
+  customPalette: null,
+  setCustomPalette: () => {},
 })
 
 /**
@@ -21,11 +25,17 @@ const AtmosphereContext = createContext<AtmosphereContextValue>({
  * smoothly without unmounting between navigations.
  */
 export function AtmosphereProvider({ children }: { children: React.ReactNode }) {
-  const [mood, setMood] = useState<MoodKey>(defaultMood)
+  const [mood, setMoodState] = useState<MoodKey>(defaultMood)
+  const [customPalette, setCustomPalette] = useState<MoodPalette | null>(null)
+
+  const setMood = (m: MoodKey) => {
+    setMoodState(m)
+    setCustomPalette(null)
+  }
 
   return (
-    <AtmosphereContext.Provider value={{ mood, setMood }}>
-      <Atmosphere mood={mood}>
+    <AtmosphereContext.Provider value={{ mood, setMood, customPalette, setCustomPalette }}>
+      <Atmosphere mood={mood} customPalette={customPalette}>
         {children}
       </Atmosphere>
     </AtmosphereContext.Provider>

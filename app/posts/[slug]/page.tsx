@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MoodSetter } from '@/components/atmosphere/MoodSetter'
 import { getPostBySlug } from '@/lib/supabase/queries/posts'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 export default async function PostPage({
     params,
@@ -18,13 +18,16 @@ export default async function PostPage({
     if (!post) notFound()
 
     const tags = post.post_tags?.map((pt) => pt.tag).filter(Boolean) ?? []
-    const mood = post.mood_preset && post.mood_preset !== 'custom'
+    const customPalette = post.mood_preset === 'custom' && post.mood_palette
+        ? (post.mood_palette as unknown as MoodPalette)
+        : null
+    const mood = !customPalette && post.mood_preset && post.mood_preset !== 'custom'
         ? (post.mood_preset as MoodKey)
         : 'golden-hour'
 
     return (
         <div className="flex min-h-screen flex-col">
-            <MoodSetter mood={mood} />
+            <MoodSetter mood={customPalette ? undefined : mood} palette={customPalette} />
 
             <main className="flex-1 pt-28 md:pt-32 pb-32">
                 <div className="w-full max-w-2xl mx-auto px-4 space-y-10">

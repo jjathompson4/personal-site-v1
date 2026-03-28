@@ -2,81 +2,16 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { moods, moodKeys } from '@/components/atmosphere/moods'
-import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import { cn } from '@/lib/utils'
 import type { Tag } from '@/types/tag'
 import type { PostWithTags } from '@/types/post'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
+import { AtmosphereCreator } from '@/components/admin/AtmosphereCreator'
+import type { AtmosphereValue } from '@/components/admin/AtmosphereCreator'
 
 interface PostEditorProps {
   initialTags: Tag[]
   initialPost?: PostWithTags
-}
-
-// ─── Mood Picker ────────────────────────────────────────────────────────────
-
-function MoodPicker({
-  value,
-  onChange,
-}: {
-  value: MoodKey | null
-  onChange: (mood: MoodKey | null) => void
-}) {
-  const { setMood } = useAtmosphere()
-
-  const handleSelect = (key: MoodKey | null) => {
-    onChange(key)
-    if (key) setMood(key)
-  }
-
-  return (
-    <div className="space-y-2">
-      <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-        Atmosphere
-      </label>
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => handleSelect(null)}
-          className={cn(
-            'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-            value === null
-              ? 'border-foreground/40 text-foreground bg-foreground/10'
-              : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-          )}
-        >
-          None
-        </button>
-
-        {moodKeys.map((key) => {
-          const mood = moods[key]
-          const swatchColor = mood.palette.solarStops[0]
-          const isSelected = value === key
-
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleSelect(key)}
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-                isSelected
-                  ? 'border-foreground/40 text-foreground bg-foreground/10'
-                  : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-              )}
-            >
-              <span
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{ background: swatchColor }}
-              />
-              {mood.name}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 // ─── Tag Picker ─────────────────────────────────────────────────────────────
@@ -222,11 +157,10 @@ export function PostEditor({ initialTags, initialPost }: PostEditorProps) {
   const [excerpt, setExcerpt] = useState(initialPost?.excerpt ?? '')
   const [content, setContent] = useState(initialPost?.content ?? '')
   const [published, setPublished] = useState(initialPost?.published ?? false)
-  const [mood, setMood] = useState<MoodKey | null>(
-    initialPost?.mood_preset && initialPost.mood_preset !== 'custom'
-      ? (initialPost.mood_preset as MoodKey)
-      : null
-  )
+  const [atmosphere, setAtmosphere] = useState<AtmosphereValue>({
+    moodPreset: initialPost?.mood_preset ?? null,
+    customPalette: initialPost?.mood_palette ? (initialPost.mood_palette as unknown as MoodPalette) : null,
+  })
   const [tagIds, setTagIds] = useState<string[]>(
     initialPost?.post_tags?.map((pt) => pt.tag?.id).filter(Boolean) ?? []
   )
@@ -263,8 +197,8 @@ export function PostEditor({ initialTags, initialPost }: PostEditorProps) {
           content: content.trim() || null,
           cover_image: null,
           published,
-          mood_preset: mood,
-          mood_palette: null,
+          mood_preset: atmosphere.moodPreset,
+          mood_palette: atmosphere.customPalette,
           tag_ids: tagIds,
         }),
       })
@@ -310,8 +244,8 @@ export function PostEditor({ initialTags, initialPost }: PostEditorProps) {
         </div>
       </div>
 
-      {/* Mood Picker */}
-      <MoodPicker value={mood} onChange={setMood} />
+      {/* Atmosphere */}
+      <AtmosphereCreator initial={atmosphere} onChange={setAtmosphere} />
 
       {/* Tags */}
       <TagPicker

@@ -4,11 +4,20 @@ import { useEffect, useState, useRef } from 'react'
 import { GradientLayer } from './GradientLayer'
 import { ParticleCanvas } from './ParticleCanvas'
 import { moods, defaultMood } from './moods'
-import type { MoodKey } from './moods'
+import type { MoodKey, MoodPalette, MoodPreset } from './moods'
 
 interface AtmosphereProps {
   mood?: MoodKey
+  customPalette?: MoodPalette | null
   children: React.ReactNode
+}
+
+function deriveChromeHint(palette: MoodPalette): 'light' | 'dark' {
+  const avgL = palette.solarStops.reduce((sum, stop) => {
+    const m = stop.match(/oklch\(([\d.]+)%/)
+    return sum + (m ? parseFloat(m[1]) : 50)
+  }, 0) / 4
+  return avgL > 65 ? 'light' : 'dark'
 }
 
 /**
@@ -21,7 +30,7 @@ interface AtmosphereProps {
  * - Loop auto-pauses when: tab is hidden, mouse/scroll are idle, or on mobile
  * - React only re-renders when mood key changes (rare)
  */
-export function Atmosphere({ mood: moodKey = defaultMood, children }: AtmosphereProps) {
+export function Atmosphere({ mood: moodKey = defaultMood, customPalette, children }: AtmosphereProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
 
@@ -40,7 +49,10 @@ export function Atmosphere({ mood: moodKey = defaultMood, children }: Atmosphere
   const isActiveRef = useRef(false)
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const moodPreset = moods[moodKey] ?? moods[defaultMood]
+  const baseMoodPreset = moods[moodKey] ?? moods[defaultMood]
+  const moodPreset: MoodPreset = customPalette
+    ? { ...baseMoodPreset, palette: customPalette, chromeHint: deriveChromeHint(customPalette) }
+    : baseMoodPreset
   const { palette, chromeHint } = moodPreset
 
   useEffect(() => {
