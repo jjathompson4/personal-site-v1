@@ -81,7 +81,7 @@ export default async function PostsPage({
         <div className="flex min-h-screen flex-col">
             <MoodSetter mood={PAGE_MOOD} />
 
-            <main className="flex-1 pt-24 md:pt-28 pb-32">
+            <main className="flex-1 pt-28 md:pt-32 pb-32">
                 <div className="w-full max-w-4xl mx-auto px-4 space-y-10">
 
                     {/* Page title — centered below the floating nav */}
