@@ -74,8 +74,8 @@ export default async function PostsPage({
                     emptyMessage={q || tag ? 'No posts match that filter.' : 'Nothing here yet.'}
                 />
 
-                {/* Footer */}
-                <div className="text-center pt-16 pb-8 opacity-40">
+                {/* Footer — top padding doubles as scroll buffer for last card */}
+                <div className="text-center pt-[30vh] pb-8 opacity-40">
                     <p className="text-sm font-medium tracking-widest uppercase">
                         Jeff Thompson — © {new Date().getFullYear()}
                         <span className="mx-2">·</span>
