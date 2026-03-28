@@ -45,6 +45,9 @@ export function FloatingNav() {
     setExpanded(false)
   }, [pathname])
 
+  // Don't render on admin routes
+  if (pathname.startsWith('/admin') || pathname.startsWith('/login')) return null
+
   const scrollToTop = (e: React.MouseEvent) => {
     e.stopPropagation()
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -83,10 +86,11 @@ export function FloatingNav() {
       {/* ── Bottom minimal nav — visible when scrolled ── */}
       <div
         className={cn(
-          'fixed bottom-6 inset-x-0 flex flex-col items-center gap-2 z-50 pointer-events-none',
+          'fixed inset-x-0 flex flex-col items-center gap-2 z-50 pointer-events-none',
           'transition-all duration-300',
           ready && scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
         )}
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         {/* Expanded options — appear above the pill */}
         <div

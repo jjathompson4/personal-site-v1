@@ -33,12 +33,21 @@ export function AtmosphereProvider({ children }: { children: React.ReactNode }) 
 }
 
 /**
- * Call this in any page to set the atmosphere mood.
- * The mood updates on mount and whenever the key changes.
+ * Call this in any page to set the atmosphere mood on mount.
+ * The mood updates automatically whenever the key changes.
  */
 export function useSetMood(mood: MoodKey) {
   const { setMood } = useContext(AtmosphereContext)
   useEffect(() => {
     setMood(mood)
   }, [mood, setMood])
+}
+
+/**
+ * Direct access to atmosphere state and setter.
+ * Use in interactive components (e.g. mood picker) that need
+ * to update the mood on user action rather than on mount.
+ */
+export function useAtmosphere() {
+  return useContext(AtmosphereContext)
 }

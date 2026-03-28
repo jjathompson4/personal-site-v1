@@ -1,41 +1,39 @@
-'use client'
+export const dynamic = 'force-dynamic'
 
-import { useSetMood } from '@/components/atmosphere/AtmosphereProvider'
+import { MoodSetter } from '@/components/atmosphere/MoodSetter'
+import { getSiteContentMany } from '@/lib/supabase/queries/site-content'
 import { getMoodForTime } from '@/lib/getMoodForTime'
+import type { MoodKey } from '@/components/atmosphere/moods'
 
-/**
- * About page — the landing page and center of the three-way toggle.
- * Atmosphere mood is driven by the visitor's local time of day.
- */
-export default function AboutPage() {
-  useSetMood(getMoodForTime())
+export default async function AboutPage() {
+  const content = await getSiteContentMany(['about_text', 'about_mood'])
+
+  const mood = content.about_mood
+    ? (content.about_mood as MoodKey)
+    : getMoodForTime()
+
+  const text = content.about_text ?? ''
+
+  // Split on blank lines to get paragraphs, preserving internal line breaks
+  const paragraphs = text.split(/\n{2,}/).filter(p => p.trim())
 
   return (
     <div className="flex min-h-screen flex-col">
+      <MoodSetter mood={mood} />
+
       <main className="flex-1 pt-28 md:pt-32 pb-32">
         <div className="w-full max-w-2xl mx-auto px-4 space-y-10">
 
-          {/* Page title — centered below the floating nav */}
           <h1 className="text-xl font-semibold tracking-tight text-foreground/80 text-center">
             Jeff Thompson
           </h1>
 
-          {/* Bio */}
           <div className="space-y-6 text-lg leading-relaxed text-foreground/75">
-            <p>
-              {/* Add your intro paragraph here */}
-              I'm a lighting designer working in the AEC industry — the part
-              of architecture that most people never think about but always
-              feel. I also write software, take photographs, and build things
-              that don't fit neatly into any one category.
-            </p>
-            <p>
-              {/* Add your second paragraph here */}
-              This site is where everything lives together. Not a portfolio,
-              not a blog — more like a running record of what I'm thinking
-              about and making. The atmosphere changes depending on when you
-              visit.
-            </p>
+            {paragraphs.map((para, i) => (
+              <p key={i} style={{ whiteSpace: 'pre-wrap' }}>
+                {para}
+              </p>
+            ))}
           </div>
 
         </div>

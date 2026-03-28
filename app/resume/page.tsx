@@ -1,118 +1,133 @@
+export const dynamic = 'force-dynamic'
+
 import { MoodSetter } from '@/components/atmosphere/MoodSetter'
+import { getResumeEntries } from '@/lib/supabase/queries/resume'
+import type { ResumeEntry } from '@/types/resume'
+import type { MoodKey } from '@/components/atmosphere/moods'
 
-// Mood for the Resume page — change to whatever feels right.
-// Will be admin-configurable in Phase 3.
-const PAGE_MOOD = 'morning-clarity' as const
+function entriesFor(all: ResumeEntry[], section: string) {
+  return all.filter((e) => e.section === section).sort((a, b) => a.sort_order - b.sort_order)
+}
 
-export default function ResumePage() {
+export default async function ResumePage() {
+  const all = await getResumeEntries()
+
+  const identity   = entriesFor(all, 'identity')[0] ?? null
+  const mood = (identity?.mood_preset ?? 'morning-clarity') as MoodKey
+  const experience = entriesFor(all, 'experience')
+  const projects   = entriesFor(all, 'projects')
+  const education  = entriesFor(all, 'education')
+  const skills     = entriesFor(all, 'skills')
+
   return (
     <div className="flex min-h-screen flex-col">
-      <MoodSetter mood={PAGE_MOOD} />
+      <MoodSetter mood={mood} />
 
       <main className="flex-1 pt-28 md:pt-32 pb-32">
         <div className="w-full max-w-2xl mx-auto px-4 space-y-10">
 
-          {/* Page title — centered below the floating nav */}
           <h1 className="text-xl font-semibold tracking-tight text-foreground/80 text-center">
             Jeff Thompson
           </h1>
 
           {/* Identity */}
-          <div className="space-y-2">
-            <p className="text-2xl font-semibold">Lighting Designer & Software Developer</p>
-            <p className="text-muted-foreground">New York, NY · jeff@thompsonjeff.com</p>
-          </div>
+          {identity && (
+            <div className="space-y-1">
+              {identity.title && (
+                <p className="text-2xl font-semibold">{identity.title}</p>
+              )}
+              <p className="text-muted-foreground">
+                {[identity.location, identity.subtitle].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+          )}
 
           {/* Experience */}
-          <section className="space-y-8">
-            <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              Experience
-            </h2>
-
-            <div className="space-y-8">
-              <div className="space-y-1">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-medium">Senior Lighting Designer</span>
-                  <span className="text-sm text-muted-foreground shrink-0">2020 — Present</span>
-                </div>
-                <p className="text-muted-foreground">Firm Name, New York NY</p>
-                <p className="text-sm text-muted-foreground/80 leading-relaxed pt-1">
-                  Placeholder — describe your role, notable projects, and scope of work here.
-                </p>
+          {experience.length > 0 && (
+            <section className="space-y-8">
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Experience
+              </h2>
+              <div className="space-y-8">
+                {experience.map((e) => (
+                  <div key={e.id} className="space-y-1">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-medium">{e.title}</span>
+                      {e.date_range && (
+                        <span className="text-sm text-muted-foreground shrink-0">{e.date_range}</span>
+                      )}
+                    </div>
+                    {(e.subtitle || e.location) && (
+                      <p className="text-muted-foreground">
+                        {[e.subtitle, e.location].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                    {e.description && (
+                      <p className="text-sm text-muted-foreground/80 leading-relaxed pt-1">
+                        {e.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
-
-              <div className="space-y-1">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-medium">Lighting Designer</span>
-                  <span className="text-sm text-muted-foreground shrink-0">2016 — 2020</span>
-                </div>
-                <p className="text-muted-foreground">Firm Name, City ST</p>
-                <p className="text-sm text-muted-foreground/80 leading-relaxed pt-1">
-                  Placeholder — describe your role here.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="font-medium">Junior Lighting Designer</span>
-                  <span className="text-sm text-muted-foreground shrink-0">2013 — 2016</span>
-                </div>
-                <p className="text-muted-foreground">Firm Name, City ST</p>
-                <p className="text-sm text-muted-foreground/80 leading-relaxed pt-1">
-                  Placeholder — describe your role here.
-                </p>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Selected Projects */}
-          <section className="space-y-8">
-            <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              Selected Projects
-            </h2>
-
-            <div className="space-y-4">
-              {[
-                'Project Name — Type, Location, Year',
-                'Project Name — Type, Location, Year',
-                'Project Name — Type, Location, Year',
-                'Project Name — Type, Location, Year',
-              ].map((p, i) => (
-                <p key={i} className="text-muted-foreground">{p}</p>
-              ))}
-            </div>
-          </section>
+          {projects.length > 0 && (
+            <section className="space-y-8">
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Selected Projects
+              </h2>
+              <div className="space-y-4">
+                {projects.map((e) => (
+                  <p key={e.id} className="text-muted-foreground">
+                    {[e.title, [e.subtitle, e.location, e.date_range].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Education */}
-          <section className="space-y-8">
-            <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              Education
-            </h2>
-
-            <div className="space-y-1">
-              <div className="flex items-baseline justify-between gap-4">
-                <span className="font-medium">Degree, Field of Study</span>
-                <span className="text-sm text-muted-foreground shrink-0">Year</span>
+          {education.length > 0 && (
+            <section className="space-y-8">
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Education
+              </h2>
+              <div className="space-y-4">
+                {education.map((e) => (
+                  <div key={e.id} className="space-y-1">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-medium">{e.title}</span>
+                      {e.date_range && (
+                        <span className="text-sm text-muted-foreground shrink-0">{e.date_range}</span>
+                      )}
+                    </div>
+                    {(e.subtitle || e.location) && (
+                      <p className="text-muted-foreground">
+                        {[e.subtitle, e.location].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
-              <p className="text-muted-foreground">University Name, City ST</p>
-            </div>
-          </section>
+            </section>
+          )}
 
           {/* Skills */}
-          <section className="space-y-8">
-            <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-              Skills & Tools
-            </h2>
-
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-muted-foreground">
-              <span>AGi32 / ElumTools</span>
-              <span>Revit / AutoCAD</span>
-              <span>DIALux</span>
-              <span>Rhino / Grasshopper</span>
-              <span>TypeScript / React</span>
-              <span>Next.js / Supabase</span>
-            </div>
-          </section>
+          {skills.length > 0 && (
+            <section className="space-y-8">
+              <h2 className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
+                Skills & Tools
+              </h2>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-muted-foreground">
+                {skills.map((e) => (
+                  <span key={e.id}>{e.title}</span>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Footer */}
           <div className="text-center pt-12 pb-4 opacity-40">
