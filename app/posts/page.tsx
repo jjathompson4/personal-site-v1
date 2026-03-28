@@ -75,7 +75,7 @@ export default async function PostsPage({
                 />
 
                 {/* Footer */}
-                <div className="text-center py-16 opacity-40">
+                <div className="text-center pt-16 pb-8 opacity-40">
                     <p className="text-sm font-medium tracking-widest uppercase">
                         Jeff Thompson — © {new Date().getFullYear()}
                         <span className="mx-2">·</span>
