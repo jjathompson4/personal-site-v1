@@ -67,10 +67,10 @@ export function PostFeed({ posts, emptyMessage = 'Nothing here yet.' }: PostFeed
     }
 
     return (
-        /* Extra bottom padding so the last card can reach viewport center */
-        <div className="pb-[30vh]">
+        <div>
             {posts.map((post, i) => {
                 const isFocused = i === focusedIndex
+                const isLast = i === posts.length - 1
                 const tags = post.post_tags?.map((pt) => pt.tag).filter(Boolean) ?? []
                 const truncated = (post.content?.length ?? 0) > CONTENT_CHAR_LIMIT
                 const displayContent = truncated
@@ -81,7 +81,8 @@ export function PostFeed({ posts, emptyMessage = 'Nothing here yet.' }: PostFeed
                     <section
                         key={post.id}
                         ref={(el) => { cardRefs.current[i] = el }}
-                        className="flex items-center justify-center px-4 py-6"
+                        /* Extra bottom margin on last card so it can reach viewport center */
+                        className={cn('flex items-center justify-center px-4 py-6', isLast && 'mb-[30vh]')}
                     >
                         <div
                             className={cn(
