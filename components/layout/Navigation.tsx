@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Menu, Edit3, Plus } from 'lucide-react'
@@ -24,60 +24,32 @@ interface NavigationProps {
 
 export function Navigation({ modules }: NavigationProps) {
     const pathname = usePathname()
-    const searchParams = useSearchParams()
     const [open, setOpen] = useState(false)
     const { isAdmin, isEditMode, setIsEditMode } = useAdmin()
-    const currentTab = searchParams.get('tab') || 'all'
-    const isHome = pathname === '/'
 
     // Reserved for future dynamic nav sections based on module config.
     void modules
 
+    const isResume = pathname === '/resume'
 
     return (
         <>
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-4">
                 <Link
-                    href="/"
+                    href="/resume"
                     className={cn(
                         "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        isHome && currentTab === 'all'
+                        isResume
                             ? "text-foreground bg-muted/50"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                 >
-                    All Activity
+                    Resume
                 </Link>
 
-                <Link
-                    href="/?tab=professional"
-                    className={cn(
-                        "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        isHome && currentTab === 'professional'
-                            ? "text-foreground bg-muted/50"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
-                >
-                    Professional
-                </Link>
-
-                <Link
-                    href="/?tab=personal"
-                    className={cn(
-                        "text-sm font-medium transition-all rounded-md px-3 py-2",
-                        isHome && currentTab === 'personal'
-                            ? "text-foreground bg-muted/50"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
-                >
-                    Personal
-                </Link>
-            </nav>
-
-            <div className="flex items-center gap-4">
                 {isAdmin && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 ml-2">
                         {isEditMode && (
                             <Button size="sm" asChild className="gap-2 bg-primary hover:bg-primary/90 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
                                 <Link href="/admin/posts/new">
@@ -100,7 +72,7 @@ export function Navigation({ modules }: NavigationProps) {
                         </div>
                     </div>
                 )}
-            </div>
+            </nav>
 
             {/* Mobile Navigation */}
             <Sheet open={open} onOpenChange={setOpen}>
@@ -118,34 +90,19 @@ export function Navigation({ modules }: NavigationProps) {
                         <Link
                             href="/"
                             onClick={() => setOpen(false)}
-                            className={cn(
-                                "text-2xl font-bold transition-colors hover:text-primary",
-                                isHome && currentTab === 'all' ? "text-primary" : "text-foreground"
-                            )}
+                            className="text-2xl font-bold transition-colors hover:text-primary text-foreground"
                         >
-                            All Activity
+                            Home
                         </Link>
-
                         <Link
-                            href="/?tab=professional"
+                            href="/resume"
                             onClick={() => setOpen(false)}
                             className={cn(
                                 "text-2xl font-bold transition-colors hover:text-primary",
-                                isHome && currentTab === 'professional' ? "text-primary" : "text-foreground"
+                                isResume ? "text-primary" : "text-foreground"
                             )}
                         >
-                            Professional
-                        </Link>
-
-                        <Link
-                            href="/?tab=personal"
-                            onClick={() => setOpen(false)}
-                            className={cn(
-                                "text-2xl font-bold transition-colors hover:text-primary",
-                                isHome && currentTab === 'personal' ? "text-primary" : "text-foreground"
-                            )}
-                        >
-                            Personal
+                            Resume
                         </Link>
                     </nav>
                 </SheetContent>
