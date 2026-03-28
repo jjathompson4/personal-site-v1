@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { ThemeToggle } from './ThemeToggle'
 import { Navigation } from './Navigation'
 import { getModules } from '@/lib/supabase/queries/modules'
 
@@ -15,10 +14,7 @@ export async function Header() {
                     <span className="text-xl font-bold">Jeff Thompson</span>
                 </Link>
 
-                <div className="flex items-center gap-4">
-                    <Navigation modules={modules} />
-                    <ThemeToggle />
-                </div>
+                <Navigation modules={modules} />
             </div>
         </header>
     )

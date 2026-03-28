@@ -328,6 +328,37 @@
   --glass-border: rgba(255, 255, 255, 0.1);
 }
 
+/**
+ * Atmosphere chrome — overrides dark/light theme toggle inside the Atmosphere wrapper.
+ * The mood's chromeHint is the authority for content readability, not system preference.
+ * CSS custom property inheritance means descendant-set vars win for all children.
+ */
+[data-chrome-hint="dark"] {
+  color-scheme: dark;
+  --background: oklch(18% 0.02 30);
+  --foreground: oklch(95% 0.01 45);
+  color: var(--foreground);
+  --card: oklch(22% 0.02 30);
+  --card-foreground: oklch(95% 0.01 45);
+  --muted: oklch(25% 0.02 30);
+  --muted-foreground: oklch(65% 0.02 35);
+  --border: oklch(30% 0.02 30);
+  --input: oklch(28% 0.02 30);
+}
+
+[data-chrome-hint="light"] {
+  color-scheme: light;
+  --background: oklch(98% 0.01 45);
+  --foreground: oklch(25% 0.02 35);
+  color: var(--foreground);
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(25% 0.02 35);
+  --muted: oklch(96% 0.01 45);
+  --muted-foreground: oklch(45% 0.02 30);
+  --border: oklch(90% 0.01 45);
+  --input: oklch(95% 0.01 45);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

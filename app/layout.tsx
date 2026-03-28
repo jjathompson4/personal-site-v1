@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AdminProvider } from "@/components/providers/AdminProvider";
 import { Toaster } from "@/components/ui/sonner";
-import { SolarGradient } from "@/components/layout/SolarGradient";
+import { AtmosphereProvider } from "@/components/atmosphere/AtmosphereProvider";
+import { FloatingNav } from "@/components/layout/FloatingNav";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -34,13 +35,14 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
         >
           <AdminProvider>
-            <SolarGradient>
+            <AtmosphereProvider>
               {children}
-            </SolarGradient>
+              <FloatingNav />
+            </AtmosphereProvider>
             <Toaster />
           </AdminProvider>
         </ThemeProvider>
