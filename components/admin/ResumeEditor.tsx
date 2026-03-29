@@ -380,10 +380,11 @@ export function ResumeEditor({ initialEntries }: { initialEntries: ResumeEntry[]
   }
 
   const handleReorder = async (section: ResumeSection, reordered: ResumeEntry[]) => {
-    // Optimistically update local state
+    // Update sort_order so entriesFor() doesn't re-sort back to original order
+    const withUpdatedOrder = reordered.map((e, i) => ({ ...e, sort_order: i }))
     setEntries((prev) => {
       const others = prev.filter((e) => e.section !== section)
-      return [...others, ...reordered]
+      return [...others, ...withUpdatedOrder]
     })
     await fetch('/api/resume/reorder', {
       method: 'POST',
