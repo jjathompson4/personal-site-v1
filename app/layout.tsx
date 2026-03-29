@@ -6,6 +6,7 @@ import { AdminProvider } from "@/components/providers/AdminProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AtmosphereProvider } from "@/components/atmosphere/AtmosphereProvider";
 import { FloatingNav } from "@/components/layout/FloatingNav";
+import { getMoodOverrides } from "@/lib/getMoodPresets";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -22,11 +23,13 @@ export const metadata: Metadata = {
   description: "Lighting designer and software creator",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const moodOverrides = await getMoodOverrides();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -39,7 +42,7 @@ export default function RootLayout({
           enableSystem={false}
         >
           <AdminProvider>
-            <AtmosphereProvider>
+            <AtmosphereProvider moodOverrides={moodOverrides}>
               {children}
               <FloatingNav />
             </AtmosphereProvider>

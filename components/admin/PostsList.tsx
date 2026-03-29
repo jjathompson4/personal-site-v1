@@ -21,7 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
 import type { PostWithTags } from '@/types/post'
-import { moods } from '@/components/atmosphere/moods'
+import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import type { MoodKey } from '@/components/atmosphere/moods'
 
 function SortablePostRow({ post, onDelete, deleting }: {
@@ -29,12 +29,13 @@ function SortablePostRow({ post, onDelete, deleting }: {
     onDelete: (id: string, title: string) => void
     deleting: string | null
 }) {
+    const { effectiveMoods } = useAtmosphere()
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: post.id })
     const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
 
     const tags = post.post_tags?.map((pt) => pt.tag).filter(Boolean) ?? []
     const moodKey = post.mood_preset && post.mood_preset !== 'custom' ? post.mood_preset as MoodKey : null
-    const moodColor = moodKey ? moods[moodKey]?.palette?.solarStops?.[0] : null
+    const moodColor = moodKey ? effectiveMoods[moodKey]?.palette?.solarStops?.[0] : null
     const date = new Date(post.published_at ?? post.created_at)
 
     return (

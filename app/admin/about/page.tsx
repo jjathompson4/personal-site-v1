@@ -1,9 +1,15 @@
 import { getSiteContentMany } from '@/lib/supabase/queries/site-content'
 import { AboutEditor } from '@/components/admin/AboutEditor'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 export default async function AdminAboutPage() {
-    const content = await getSiteContentMany(['about_text', 'about_mood'])
+    const content = await getSiteContentMany(['about_text', 'about_mood', 'about_mood_palette'])
+
+    const rawPalette = content.about_mood_palette
+    let palette: MoodPalette | null = null
+    if (rawPalette) {
+        try { palette = JSON.parse(rawPalette) as MoodPalette } catch { /* ignore */ }
+    }
 
     return (
         <div className="space-y-6">
@@ -15,7 +21,8 @@ export default async function AdminAboutPage() {
             </div>
             <AboutEditor
                 initialText={content.about_text ?? ''}
-                initialMood={(content.about_mood as MoodKey) ?? null}
+                initialMood={(content.about_mood as MoodKey | 'custom') ?? null}
+                initialPalette={palette}
             />
         </div>
     )

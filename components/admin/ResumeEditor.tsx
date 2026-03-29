@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { moods, moodKeys } from '@/components/atmosphere/moods'
-import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import { AtmosphereCreator } from '@/components/admin/AtmosphereCreator'
+import type { AtmosphereValue } from '@/components/admin/AtmosphereCreator'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 import type { ResumeEntry, ResumeSection } from '@/types/resume'
 import {
     DndContext,
@@ -183,55 +183,6 @@ function SortableEntryRow({
   )
 }
 
-// ─── Mood picker ─────────────────────────────────────────────────────────────
-
-function ResumeMoodPicker({
-  value,
-  onChange,
-}: {
-  value: MoodKey | null
-  onChange: (mood: MoodKey) => void
-}) {
-  const { setMood } = useAtmosphere()
-
-  const handleSelect = (key: MoodKey) => {
-    onChange(key)
-    setMood(key)
-  }
-
-  return (
-    <div className="space-y-2">
-      <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-        Page Atmosphere
-      </label>
-      <div className="flex flex-wrap gap-2">
-        {moodKeys.map((key) => {
-          const mood = moods[key]
-          const swatchColor = mood.palette.solarStops[0]
-          const isSelected = value === key
-
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleSelect(key)}
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-                isSelected
-                  ? 'border-foreground/40 text-foreground bg-foreground/10'
-                  : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-              )}
-            >
-              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: swatchColor }} />
-              {mood.name}
-            </button>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
 // ─── Section block ────────────────────────────────────────────────────────────
 
 function SectionBlock({
@@ -341,20 +292,20 @@ export function ResumeEditor({ initialEntries }: { initialEntries: ResumeEntry[]
   const [error, setError] = useState<string | null>(null)
 
   const identityEntry = entries.find((e) => e.section === 'identity') ?? null
-  const [mood, setMoodState] = useState<MoodKey | null>(
-    (identityEntry?.mood_preset as MoodKey) ?? 'morning-clarity'
-  )
 
-  const handleMoodChange = async (key: MoodKey) => {
-    setMoodState(key)
+  const handleAtmosphereChange = async (v: AtmosphereValue) => {
     if (!identityEntry) return
     await fetch(`/api/resume/${identityEntry.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mood_preset: key }),
+      body: JSON.stringify({ mood_preset: v.moodPreset, mood_palette: v.customPalette }),
     })
     setEntries((prev) =>
-      prev.map((e) => (e.id === identityEntry.id ? { ...e, mood_preset: key } : e))
+      prev.map((e) =>
+        e.id === identityEntry.id
+          ? { ...e, mood_preset: v.moodPreset, mood_palette: v.customPalette as Record<string, unknown> | null }
+          : e
+      )
     )
   }
 
@@ -411,7 +362,15 @@ export function ResumeEditor({ initialEntries }: { initialEntries: ResumeEntry[]
     <div className="space-y-10 max-w-2xl">
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      <ResumeMoodPicker value={mood} onChange={handleMoodChange} />
+      <AtmosphereCreator
+        initial={{
+          moodPreset: identityEntry?.mood_preset ?? 'morning-clarity',
+          customPalette: identityEntry?.mood_palette
+            ? (identityEntry.mood_palette as unknown as MoodPalette)
+            : null,
+        }}
+        onChange={handleAtmosphereChange}
+      />
 
       {SECTIONS.map((section) => (
         <SectionBlock

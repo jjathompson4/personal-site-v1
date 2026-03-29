@@ -1,15 +1,18 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { Atmosphere } from './Atmosphere'
-import { defaultMood } from './moods'
-import type { MoodKey, MoodPalette } from './moods'
+import { moods as hardcodedMoods, defaultMood } from './moods'
+import type { MoodKey, MoodPalette, MoodPreset } from './moods'
+import type { MoodOverrides } from '@/lib/getMoodPresets'
 
 interface AtmosphereContextValue {
   mood: MoodKey
   setMood: (mood: MoodKey) => void
   customPalette: MoodPalette | null
   setCustomPalette: (palette: MoodPalette | null) => void
+  /** Effective moods = hardcoded merged with DB overrides */
+  effectiveMoods: Record<string, MoodPreset>
 }
 
 const AtmosphereContext = createContext<AtmosphereContextValue>({
@@ -17,6 +20,7 @@ const AtmosphereContext = createContext<AtmosphereContextValue>({
   setMood: () => {},
   customPalette: null,
   setCustomPalette: () => {},
+  effectiveMoods: hardcodedMoods,
 })
 
 /**
@@ -24,9 +28,26 @@ const AtmosphereContext = createContext<AtmosphereContextValue>({
  * Pages call useSetMood() to update the mood — the Atmosphere crossfades
  * smoothly without unmounting between navigations.
  */
-export function AtmosphereProvider({ children }: { children: React.ReactNode }) {
+export function AtmosphereProvider({
+  children,
+  moodOverrides,
+}: {
+  children: React.ReactNode
+  moodOverrides?: MoodOverrides | null
+}) {
   const [mood, setMoodState] = useState<MoodKey>(defaultMood)
   const [customPalette, setCustomPalette] = useState<MoodPalette | null>(null)
+
+  const effectiveMoods = useMemo(() => {
+    if (!moodOverrides) return hardcodedMoods
+    const merged = { ...hardcodedMoods }
+    for (const [key, palette] of Object.entries(moodOverrides)) {
+      if (merged[key] && palette) {
+        merged[key] = { ...merged[key], palette }
+      }
+    }
+    return merged
+  }, [moodOverrides])
 
   const setMood = (m: MoodKey) => {
     setMoodState(m)
@@ -34,8 +55,8 @@ export function AtmosphereProvider({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <AtmosphereContext.Provider value={{ mood, setMood, customPalette, setCustomPalette }}>
-      <Atmosphere mood={mood} customPalette={customPalette}>
+    <AtmosphereContext.Provider value={{ mood, setMood, customPalette, setCustomPalette, effectiveMoods }}>
+      <Atmosphere mood={mood} customPalette={customPalette} effectiveMoods={effectiveMoods}>
         {children}
       </Atmosphere>
     </AtmosphereContext.Provider>

@@ -1,28 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { moods, moodKeys } from '@/components/atmosphere/moods'
+import { moods as hardcodedMoods, moodKeys } from '@/components/atmosphere/moods'
 import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import { cn } from '@/lib/utils'
 import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 // ─── OKLCH helpers ────────────────────────────────────────────────────────────
 
-interface Oklch { l: number; c: number; h: number }
+export interface Oklch { l: number; c: number; h: number }
 
-function parseOklch(val: string): Oklch {
+export function parseOklch(val: string): Oklch {
     const m = val.match(/oklch\(([\d.]+)%\s+([\d.]+)\s+([\d.]+)\)/)
     if (!m) return { l: 50, c: 0.05, h: 200 }
     return { l: parseFloat(m[1]), c: parseFloat(m[2]), h: parseFloat(m[3]) }
 }
 
-function stringifyOklch({ l, c, h }: Oklch): string {
+export function stringifyOklch({ l, c, h }: Oklch): string {
     return `oklch(${l.toFixed(1)}% ${c.toFixed(3)} ${Math.round(h)})`
 }
 
 // ─── Single gradient stop editor ──────────────────────────────────────────────
 
-function StopEditor({
+export function StopEditor({
     label,
     value,
     onChange,
@@ -98,7 +98,8 @@ export function AtmosphereCreator({
     initial: AtmosphereValue
     onChange: (v: AtmosphereValue) => void
 }) {
-    const { setMood, setCustomPalette } = useAtmosphere()
+    const { setMood, setCustomPalette, effectiveMoods } = useAtmosphere()
+    const moods = effectiveMoods ?? hardcodedMoods
 
     const initialBaseMood = initial.moodPreset && initial.moodPreset !== 'custom'
         ? (initial.moodPreset as MoodKey)

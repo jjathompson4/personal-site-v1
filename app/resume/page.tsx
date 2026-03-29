@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { MoodSetter } from '@/components/atmosphere/MoodSetter'
 import { getResumeEntries } from '@/lib/supabase/queries/resume'
 import type { ResumeEntry } from '@/types/resume'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 function entriesFor(all: ResumeEntry[], section: string) {
   return all.filter((e) => e.section === section).sort((a, b) => a.sort_order - b.sort_order)
@@ -13,7 +13,12 @@ export default async function ResumePage() {
   const all = await getResumeEntries()
 
   const identity   = entriesFor(all, 'identity')[0] ?? null
-  const mood = (identity?.mood_preset ?? 'morning-clarity') as MoodKey
+  const customPalette = identity?.mood_preset === 'custom' && identity?.mood_palette
+    ? (identity.mood_palette as unknown as MoodPalette)
+    : null
+  const mood = !customPalette && identity?.mood_preset && identity.mood_preset !== 'custom'
+    ? (identity.mood_preset as MoodKey)
+    : 'morning-clarity'
   const experience = entriesFor(all, 'experience')
   const projects   = entriesFor(all, 'projects')
   const education  = entriesFor(all, 'education')
@@ -21,7 +26,7 @@ export default async function ResumePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <MoodSetter mood={mood} />
+      {customPalette ? <MoodSetter palette={customPalette} /> : <MoodSetter mood={mood} />}
 
       <main className="flex-1 pt-28 md:pt-32 pb-32">
         <div className="w-full max-w-2xl mx-auto px-4 space-y-10">

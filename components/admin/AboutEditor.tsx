@@ -1,20 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { moods, moodKeys } from '@/components/atmosphere/moods'
-import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
-import { cn } from '@/lib/utils'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import { AtmosphereCreator } from '@/components/admin/AtmosphereCreator'
+import type { AtmosphereValue } from '@/components/admin/AtmosphereCreator'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 interface AboutEditorProps {
   initialText: string
-  initialMood: MoodKey | null
+  initialMood: MoodKey | 'custom' | null
+  initialPalette: MoodPalette | null
 }
 
-export function AboutEditor({ initialText, initialMood }: AboutEditorProps) {
-  const { setMood } = useAtmosphere()
+export function AboutEditor({ initialText, initialMood, initialPalette }: AboutEditorProps) {
   const [text, setText] = useState(initialText)
-  const [mood, setMoodState] = useState<MoodKey | null>(initialMood)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,10 +40,11 @@ export function AboutEditor({ initialText, initialMood }: AboutEditorProps) {
     }
   }
 
-  const handleMoodSelect = (key: MoodKey | null) => {
-    setMoodState(key)
-    setMood(key ?? 'golden-hour')
-    save([{ key: 'about_mood', value: key }])
+  const handleAtmosphereChange = (v: AtmosphereValue) => {
+    save([
+      { key: 'about_mood', value: v.moodPreset },
+      { key: 'about_mood_palette', value: v.customPalette ? JSON.stringify(v.customPalette) : null },
+    ])
   }
 
   const handleSaveText = () => {
@@ -57,51 +56,13 @@ export function AboutEditor({ initialText, initialMood }: AboutEditorProps) {
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       {/* Atmosphere */}
-      <div className="space-y-3">
-        <div>
-          <label className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
-            Page Atmosphere
-          </label>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            "Time of day" uses the visitor's local time. Selecting a preset pins it.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => handleMoodSelect(null)}
-            className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-              mood === null
-                ? 'border-foreground/40 text-foreground bg-foreground/10'
-                : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-            )}
-          >
-            <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-gradient-to-br from-yellow-300 to-blue-400 opacity-60" />
-            Time of day
-          </button>
-          {moodKeys.map((key) => {
-            const m = moods[key]
-            const swatchColor = m.palette.solarStops[0]
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleMoodSelect(key)}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-                  mood === key
-                    ? 'border-foreground/40 text-foreground bg-foreground/10'
-                    : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-                )}
-              >
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: swatchColor }} />
-                {m.name}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <AtmosphereCreator
+        initial={{
+          moodPreset: initialMood,
+          customPalette: initialPalette,
+        }}
+        onChange={handleAtmosphereChange}
+      />
 
       {/* Bio text */}
       <div className="space-y-3">

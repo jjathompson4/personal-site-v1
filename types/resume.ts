@@ -12,6 +12,7 @@ export interface ResumeEntry {
   date_range: string | null
   description: string | null
   mood_preset: string | null
+  mood_palette: Record<string, unknown> | null
 }
 
 export type ResumeEntryFormData = Omit<ResumeEntry, 'id' | 'created_at' | 'updated_at'>

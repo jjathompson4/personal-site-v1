@@ -3,12 +3,19 @@ export const dynamic = 'force-dynamic'
 import { MoodSetter } from '@/components/atmosphere/MoodSetter'
 import { TimeMoodSetter } from '@/components/atmosphere/TimeMoodSetter'
 import { getSiteContentMany } from '@/lib/supabase/queries/site-content'
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
 export default async function AboutPage() {
-  const content = await getSiteContentMany(['about_text', 'about_mood'])
+  const content = await getSiteContentMany(['about_text', 'about_mood', 'about_mood_palette'])
 
-  const explicitMood = content.about_mood ? (content.about_mood as MoodKey) : null
+  const explicitMood = content.about_mood && content.about_mood !== 'custom'
+    ? (content.about_mood as MoodKey)
+    : null
+
+  let customPalette: MoodPalette | null = null
+  if (content.about_mood === 'custom' && content.about_mood_palette) {
+    try { customPalette = JSON.parse(content.about_mood_palette) as MoodPalette } catch { /* ignore */ }
+  }
 
   const text = content.about_text ?? ''
 
@@ -17,7 +24,11 @@ export default async function AboutPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {explicitMood ? <MoodSetter mood={explicitMood} /> : <TimeMoodSetter />}
+      {customPalette
+        ? <MoodSetter palette={customPalette} />
+        : explicitMood
+          ? <MoodSetter mood={explicitMood} />
+          : <TimeMoodSetter />}
 
       <main className="flex-1 pt-28 md:pt-32 pb-32">
         <div className="w-full max-w-2xl mx-auto px-4 space-y-10">
