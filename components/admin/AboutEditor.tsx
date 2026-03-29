@@ -62,6 +62,7 @@ export function AboutEditor({ initialText, initialMood, initialPalette }: AboutE
           customPalette: initialPalette,
         }}
         onChange={handleAtmosphereChange}
+        noneLabel="Time of day"
       />
 
       {/* Bio text */}

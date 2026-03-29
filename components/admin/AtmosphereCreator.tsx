@@ -94,9 +94,12 @@ export interface AtmosphereValue {
 export function AtmosphereCreator({
     initial,
     onChange,
+    noneLabel = 'None',
 }: {
     initial: AtmosphereValue
     onChange: (v: AtmosphereValue) => void
+    /** Label for the "no preset" button — e.g. "Time of day" for the About page */
+    noneLabel?: string
 }) {
     const { setMood, setCustomPalette, effectiveMoods } = useAtmosphere()
     const moods = effectiveMoods ?? hardcodedMoods
@@ -172,7 +175,7 @@ export function AtmosphereCreator({
                             : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
                     )}
                 >
-                    None
+                    {noneLabel}
                 </button>
                 {moodKeys.map((key) => {
                     const m = moods[key]
