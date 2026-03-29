@@ -81,9 +81,29 @@ export default async function ResumePage() {
               </h2>
               <div className="space-y-4">
                 {projects.map((e) => (
-                  <p key={e.id} className="text-muted-foreground">
-                    {[e.title, [e.subtitle, e.location, e.date_range].filter(Boolean).join(', ')].filter(Boolean).join(' — ')}
-                  </p>
+                  <div key={e.id} className="space-y-0.5">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="font-medium">{e.title}</span>
+                      {e.date_range && (
+                        <span className="text-sm text-muted-foreground shrink-0">{e.date_range}</span>
+                      )}
+                    </div>
+                    {e.subtitle && (
+                      <p className="text-sm text-muted-foreground/70">
+                        <a
+                          href={e.subtitle.startsWith('http') ? e.subtitle : `https://${e.subtitle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-foreground transition-colors underline underline-offset-2 decoration-foreground/20"
+                        >
+                          {e.subtitle}
+                        </a>
+                      </p>
+                    )}
+                    {e.location && (
+                      <p className="text-sm text-muted-foreground">{e.location}</p>
+                    )}
+                  </div>
                 ))}
               </div>
             </section>

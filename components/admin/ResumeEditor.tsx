@@ -52,6 +52,14 @@ const FIELD_LABELS: Partial<Record<keyof ResumeEntry, string>> = {
   description: 'Description',
 }
 
+// Section-specific overrides for field labels
+const SECTION_FIELD_LABELS: Partial<Record<ResumeSection, Partial<Record<keyof ResumeEntry, string>>>> = {
+  projects: {
+    title:    'Project Title',
+    subtitle: 'URL',
+  },
+}
+
 const SECTIONS: ResumeSection[] = ['identity', 'experience', 'projects', 'education', 'skills']
 
 // ─── Entry form ───────────────────────────────────────────────────────────────
@@ -82,7 +90,7 @@ function EntryForm({
   return (
     <div className="space-y-3 p-4 rounded-lg border border-foreground/15 bg-foreground/3">
       {fields.map((field) => {
-        const label = FIELD_LABELS[field] ?? String(field)
+        const label = SECTION_FIELD_LABELS[section]?.[field] ?? FIELD_LABELS[field] ?? String(field)
         const isTextarea = field === 'description'
         return (
           <div key={field} className="space-y-1">
@@ -141,7 +149,12 @@ function SortableEntryRow({
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
 
   const primary = entry.title ?? '—'
-  const secondary = [entry.subtitle, entry.location].filter(Boolean).join(', ')
+  const isProject = section === 'projects'
+  // Projects: URL on its own line, then location + date
+  const url = isProject ? entry.subtitle : null
+  const secondary = isProject
+    ? [entry.location].filter(Boolean).join(', ')
+    : [entry.subtitle, entry.location].filter(Boolean).join(', ')
   const tertiary = entry.date_range
 
   return (
@@ -157,6 +170,7 @@ function SortableEntryRow({
       <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-sm font-medium truncate">{primary}</p>
+          {url && <p className="text-xs text-muted-foreground/70 mt-0.5 font-mono truncate">{url}</p>}
           {secondary && <p className="text-xs text-muted-foreground mt-0.5">{secondary}</p>}
           {tertiary && <p className="text-xs text-muted-foreground/60">{tertiary}</p>}
         </div>
