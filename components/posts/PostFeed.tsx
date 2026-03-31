@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import { cn } from '@/lib/utils'
+import { markdownComponents } from '@/lib/markdown-components'
 import type { PostWithTags } from '@/types/post'
 import type { MoodKey } from '@/components/atmosphere/moods'
 
@@ -148,7 +149,7 @@ export function PostFeed({ posts, emptyMessage = 'Nothing here yet.' }: PostFeed
                                             truncated && 'max-h-52 overflow-hidden'
                                         )}
                                     >
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                                             {displayContent}
                                         </ReactMarkdown>
                                     </div>

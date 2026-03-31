@@ -1,9 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { MoodSetter } from '@/components/atmosphere/MoodSetter'
+import { PostContent } from '@/components/posts/PostContent'
 import { getPostBySlug } from '@/lib/supabase/queries/posts'
 import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
 
@@ -101,9 +100,7 @@ export default async function PostPage({
                             prose-li:text-foreground/80
                             prose-img:rounded-xl
                         ">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {post.content}
-                            </ReactMarkdown>
+                            <PostContent content={post.content} />
                         </div>
                     )}
 

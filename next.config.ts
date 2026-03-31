@@ -45,6 +45,7 @@ const nextConfig: NextConfig = {
                             `media-src 'self' https://${supabaseHostname}`,
                             `connect-src 'self' https://*.supabase.co wss://*.supabase.co`,
                             `font-src 'self'`,
+                            `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com`,
                             `object-src 'none'`,
                             `frame-ancestors 'none'`,
                         ].join('; '),

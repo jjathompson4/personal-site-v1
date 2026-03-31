@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import { cn } from '@/lib/utils'
+import { markdownComponents } from '@/lib/markdown-components'
 
 interface JournalUpdateProps {
     content: string
@@ -17,7 +18,7 @@ export function JournalUpdate({ content, title, className }: JournalUpdateProps)
             {title && (
                 <h2 className="text-2xl font-bold tracking-tight mb-4">{title}</h2>
             )}
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]} components={markdownComponents}>
                 {content}
             </ReactMarkdown>
         </article>
