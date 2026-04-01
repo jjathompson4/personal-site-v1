@@ -86,7 +86,7 @@ export function PostFeed({ posts, emptyMessage = 'Nothing here yet.' }: PostFeed
                         <div
                             className={cn(
                                 'w-full max-w-2xl rounded-2xl border border-foreground/10',
-                                'bg-background/25 backdrop-blur-md',
+                                'bg-background/15 backdrop-blur-md',
                                 'p-8 md:p-10',
                                 'transition-all duration-500 ease-out will-change-transform',
                                 isFocused

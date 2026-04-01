@@ -7,7 +7,7 @@ export function Footer() {
 
     return (
         <footer
-            className="border-t backdrop-blur supports-[backdrop-filter]:bg-background/60"
+            className="border-t backdrop-blur supports-[backdrop-filter]:bg-background/40"
             style={{
                 backgroundColor: 'var(--glass-bg)',
                 borderColor: 'var(--glass-border)'

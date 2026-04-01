@@ -14,7 +14,7 @@ export default async function AdminLayout({
         <div className="min-h-screen flex flex-col">
             <MoodSetter mood="overcast" />
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b backdrop-blur-md bg-background/80">
+            <header className="sticky top-0 z-50 w-full border-b backdrop-blur-md bg-background/50">
                 {/* Row 1: wordmark + actions */}
                 <div className="w-full max-w-screen-xl mx-auto px-4 flex h-12 items-center justify-between gap-4">
                     <a
@@ -42,7 +42,7 @@ export default async function AdminLayout({
 
             {/* Content */}
             <main className="flex-1 w-full max-w-screen-xl mx-auto px-4 py-6">
-                <div className="rounded-xl border bg-background/40 backdrop-blur-sm p-6 md:p-10 min-h-[calc(100vh-8rem)]">
+                <div className="rounded-xl border bg-background/25 backdrop-blur-sm p-6 md:p-10 min-h-[calc(100vh-8rem)]">
                     {children}
                 </div>
             </main>

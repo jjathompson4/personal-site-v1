@@ -53,7 +53,7 @@ export function FloatingNav() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const pillBase = 'border border-foreground/10 bg-background/70 backdrop-blur-md'
+  const pillBase = 'border border-foreground/10 bg-background/45 backdrop-blur-md'
 
   return (
     <>
