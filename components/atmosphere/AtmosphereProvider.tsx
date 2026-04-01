@@ -31,23 +31,38 @@ const AtmosphereContext = createContext<AtmosphereContextValue>({
 export function AtmosphereProvider({
   children,
   moodOverrides,
+  customPresets,
 }: {
   children: React.ReactNode
   moodOverrides?: MoodOverrides | null
+  customPresets?: Record<string, MoodPreset> | null
 }) {
   const [mood, setMoodState] = useState<MoodKey>(defaultMood)
   const [customPalette, setCustomPalette] = useState<MoodPalette | null>(null)
 
   const effectiveMoods = useMemo(() => {
-    if (!moodOverrides) return hardcodedMoods
-    const merged = { ...hardcodedMoods }
-    for (const [key, palette] of Object.entries(moodOverrides)) {
-      if (merged[key] && palette) {
-        merged[key] = { ...merged[key], palette }
+    const merged: Record<string, MoodPreset> = { ...hardcodedMoods }
+    // Apply palette + chromeHint overrides to built-in moods
+    if (moodOverrides) {
+      for (const [key, override] of Object.entries(moodOverrides)) {
+        if (merged[key] && override) {
+          const { chromeHint, ...palette } = override
+          merged[key] = {
+            ...merged[key],
+            palette,
+            ...(chromeHint ? { chromeHint } : {}),
+          }
+        }
+      }
+    }
+    // Add custom presets
+    if (customPresets) {
+      for (const [key, preset] of Object.entries(customPresets)) {
+        merged[key] = preset
       }
     }
     return merged
-  }, [moodOverrides])
+  }, [moodOverrides, customPresets])
 
   const setMood = (m: MoodKey) => {
     setMoodState(m)

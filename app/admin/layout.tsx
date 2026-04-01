@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth/utils'
 import { LogoutButton } from '@/components/admin/LogoutButton'
 import { AdminNav } from '@/components/admin/AdminNav'
+import { MoodSetter } from '@/components/atmosphere/MoodSetter'
 
 export default async function AdminLayout({
     children,
@@ -11,6 +12,7 @@ export default async function AdminLayout({
 
     return (
         <div className="min-h-screen flex flex-col">
+            <MoodSetter mood="overcast" />
             {/* Header */}
             <header className="sticky top-0 z-50 w-full border-b backdrop-blur-md bg-background/80">
                 {/* Row 1: wordmark + actions */}

@@ -232,6 +232,16 @@ export const moods: Record<string, MoodPreset> = {
   },
 }
 
-export type MoodKey = keyof typeof moods
-export const moodKeys = Object.keys(moods) as MoodKey[]
-export const defaultMood: MoodKey = 'hps-at-dusk'
+/** Narrow union of the 8 built-in mood keys */
+export type BuiltinMoodKey = keyof typeof moods
+
+/** Runtime mood key — can be built-in or a custom preset slug */
+export type MoodKey = string
+
+/** Only the 8 hardcoded keys */
+export const builtinMoodKeys = Object.keys(moods) as BuiltinMoodKey[]
+
+/** @deprecated Use builtinMoodKeys — kept for backward compat */
+export const moodKeys = builtinMoodKeys
+
+export const defaultMood: BuiltinMoodKey = 'hps-at-dusk'

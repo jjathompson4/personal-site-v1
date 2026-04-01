@@ -10,6 +10,7 @@ const routes = [
     { label: 'About', href: '/admin/about' },
     { label: 'Resume', href: '/admin/resume' },
     { label: 'Moods', href: '/admin/moods' },
+    { label: 'Analytics', href: '/admin/analytics' },
 ]
 
 export function AdminNav() {

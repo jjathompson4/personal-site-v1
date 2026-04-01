@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { moods as hardcodedMoods, moodKeys } from '@/components/atmosphere/moods'
+import { moods as hardcodedMoods, builtinMoodKeys } from '@/components/atmosphere/moods'
 import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import { StopEditor } from '@/components/admin/AtmosphereCreator'
 import { cn } from '@/lib/utils'
@@ -64,10 +64,23 @@ export function MoodPresetsEditor({
   }
 
   const updatePalette = (key: MoodKey, palette: MoodPalette) => {
-    const newOverrides = { ...overrides, [key]: palette }
+    const existing = overrides[key]
+    const chromeHint = existing?.chromeHint
+    const newOverrides = { ...overrides, [key]: { ...palette, ...(chromeHint ? { chromeHint } : {}) } }
     setOverrides(newOverrides)
     setCustomPalette(palette)
     save(newOverrides)
+  }
+
+  const updateChromeHint = (key: MoodKey, chromeHint: 'light' | 'dark') => {
+    const palette = getEffectivePalette(key)
+    const newOverrides = { ...overrides, [key]: { ...palette, chromeHint } }
+    setOverrides(newOverrides)
+    save(newOverrides)
+  }
+
+  const getEffectiveChromeHint = (key: MoodKey): 'light' | 'dark' => {
+    return overrides[key]?.chromeHint ?? hardcodedMoods[key].chromeHint
   }
 
   const resetMood = (key: MoodKey) => {
@@ -85,7 +98,7 @@ export function MoodPresetsEditor({
     <div className="space-y-4 max-w-2xl">
       {error && <p className="text-sm text-red-400">{error}</p>}
 
-      {moodKeys.map((key) => {
+      {builtinMoodKeys.map((key) => {
         const mood = effectiveMoods[key] ?? hardcodedMoods[key]
         const palette = getEffectivePalette(key)
         const isExpanded = expandedMood === key
@@ -208,6 +221,30 @@ export function MoodPresetsEditor({
                     value={palette.particleColor}
                     onChange={(val) => updatePalette(key, { ...palette, particleColor: val })}
                   />
+                </div>
+
+                {/* Text style (chromeHint) */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">
+                    Text Style
+                  </p>
+                  <div className="flex gap-2">
+                    {(['light', 'dark'] as const).map(hint => (
+                      <button
+                        key={hint}
+                        type="button"
+                        onClick={() => updateChromeHint(key, hint)}
+                        className={cn(
+                          'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                          getEffectiveChromeHint(key) === hint
+                            ? 'border-foreground/40 text-foreground bg-foreground/10'
+                            : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                        )}
+                      >
+                        {hint === 'light' ? 'Dark text on light' : 'Light text on dark'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Actions */}

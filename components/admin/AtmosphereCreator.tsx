@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { moods as hardcodedMoods, moodKeys } from '@/components/atmosphere/moods'
+import { moods as hardcodedMoods, builtinMoodKeys } from '@/components/atmosphere/moods'
 import { useAtmosphere } from '@/components/atmosphere/AtmosphereProvider'
 import { cn } from '@/lib/utils'
 import type { MoodKey, MoodPalette } from '@/components/atmosphere/moods'
@@ -164,47 +164,86 @@ export function AtmosphereCreator({
             </label>
 
             {/* Preset picker */}
-            <div className="flex flex-wrap gap-2">
-                <button
-                    type="button"
-                    onClick={() => handleBaseMoodSelect(null)}
-                    className={cn(
-                        'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-                        baseMood === null
-                            ? 'border-foreground/40 text-foreground bg-foreground/10'
-                            : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
-                    )}
-                >
-                    {noneLabel}
-                </button>
-                {moodKeys.map((key) => {
-                    const m = moods[key]
-                    const isActive = baseMood === key && !customizing
-                    const isCustomBase = baseMood === key && customizing
-                    return (
+            {(() => {
+                const allKeys = Object.keys(moods)
+                const customKeys = allKeys.filter(k => !builtinMoodKeys.includes(k as typeof builtinMoodKeys[number]))
+                const hasCustom = customKeys.length > 0
+
+                return (
+                    <div className="flex flex-wrap gap-2">
                         <button
-                            key={key}
                             type="button"
-                            onClick={() => handleBaseMoodSelect(key)}
+                            onClick={() => handleBaseMoodSelect(null)}
                             className={cn(
-                                'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
-                                isActive
+                                'px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                                baseMood === null
                                     ? 'border-foreground/40 text-foreground bg-foreground/10'
-                                    : isCustomBase
-                                        ? 'border-foreground/20 text-foreground/70 bg-foreground/5'
-                                        : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                                    : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
                             )}
                         >
-                            <span
-                                className="w-3 h-3 rounded-full shrink-0"
-                                style={{ background: m.palette.solarStops[0] }}
-                            />
-                            {m.name}
-                            {isCustomBase && <span className="opacity-50">*</span>}
+                            {noneLabel}
                         </button>
-                    )
-                })}
-            </div>
+                        {builtinMoodKeys.map((key) => {
+                            const m = moods[key]
+                            const isActive = baseMood === key && !customizing
+                            const isCustomBase = baseMood === key && customizing
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => handleBaseMoodSelect(key)}
+                                    className={cn(
+                                        'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                                        isActive
+                                            ? 'border-foreground/40 text-foreground bg-foreground/10'
+                                            : isCustomBase
+                                                ? 'border-foreground/20 text-foreground/70 bg-foreground/5'
+                                                : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                                    )}
+                                >
+                                    <span
+                                        className="w-3 h-3 rounded-full shrink-0"
+                                        style={{ background: m.palette.solarStops[0] }}
+                                    />
+                                    {m.name}
+                                    {isCustomBase && <span className="opacity-50">*</span>}
+                                </button>
+                            )
+                        })}
+                        {hasCustom && (
+                            <span className="flex items-center text-[10px] text-muted-foreground/40 px-1">|</span>
+                        )}
+                        {customKeys.map((key) => {
+                            const m = moods[key]
+                            if (!m) return null
+                            const isActive = baseMood === key && !customizing
+                            const isCustomBase = baseMood === key && customizing
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => handleBaseMoodSelect(key)}
+                                    className={cn(
+                                        'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all',
+                                        isActive
+                                            ? 'border-foreground/40 text-foreground bg-foreground/10'
+                                            : isCustomBase
+                                                ? 'border-foreground/20 text-foreground/70 bg-foreground/5'
+                                                : 'border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                                    )}
+                                >
+                                    <span
+                                        className="w-3 h-3 rounded-full shrink-0"
+                                        style={{ background: m.palette.solarStops[0] }}
+                                    />
+                                    {m.name}
+                                    {isCustomBase && <span className="opacity-50">*</span>}
+                                </button>
+                            )
+                        })}
+                    </div>
+                )
+            })()}
 
             {/* Customize toggle */}
             {baseMood && !customizing && (
@@ -240,6 +279,25 @@ export function AtmosphereCreator({
                         ))}
                     </div>
 
+                    {/* Orb colors */}
+                    <div className="space-y-4">
+                        <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">
+                            Orbs
+                        </p>
+                        {palette.orbs.map((orb, i) => (
+                            <StopEditor
+                                key={`orb-${i}`}
+                                label={`Orb ${i + 1}`}
+                                value={orb}
+                                onChange={(val) => {
+                                    const newOrbs = [...palette.orbs] as MoodPalette['orbs']
+                                    newOrbs[i] = val
+                                    handlePaletteChange({ ...palette, orbs: newOrbs })
+                                }}
+                            />
+                        ))}
+                    </div>
+
                     {/* Orb + particle intensity */}
                     <div className="space-y-3">
                         <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">
@@ -265,6 +323,18 @@ export function AtmosphereCreator({
                             />
                             <span className="text-[10px] text-muted-foreground/50 w-8 text-right tabular-nums">{palette.particleOpacity.toFixed(2)}</span>
                         </div>
+                    </div>
+
+                    {/* Particle color */}
+                    <div className="space-y-4">
+                        <p className="text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/50">
+                            Particle Color
+                        </p>
+                        <StopEditor
+                            label="Dust motes"
+                            value={palette.particleColor}
+                            onChange={(val) => handlePaletteChange({ ...palette, particleColor: val })}
+                        />
                     </div>
 
                     {/* Actions */}

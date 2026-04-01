@@ -1,4 +1,4 @@
-import type { MoodKey } from '@/components/atmosphere/moods'
+import type { BuiltinMoodKey } from '@/components/atmosphere/moods'
 
 /**
  * Maps the user's local hour to an atmosphere mood.
@@ -14,7 +14,7 @@ import type { MoodKey } from '@/components/atmosphere/moods'
  *   22–24 → flashlight-tag
  *   0–5   → twilight
  */
-export function getMoodForTime(hour?: number): MoodKey {
+export function getMoodForTime(hour?: number): BuiltinMoodKey {
   const h = hour ?? new Date().getHours()
 
   if (h >= 5 && h < 7)  return 'sunrise'

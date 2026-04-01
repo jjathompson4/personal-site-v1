@@ -6,7 +6,10 @@ import { AdminProvider } from "@/components/providers/AdminProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AtmosphereProvider } from "@/components/atmosphere/AtmosphereProvider";
 import { FloatingNav } from "@/components/layout/FloatingNav";
-import { getMoodOverrides } from "@/lib/getMoodPresets";
+import { getMoodOverrides, getCustomPresets } from "@/lib/getMoodPresets";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -28,7 +31,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const moodOverrides = await getMoodOverrides();
+  const [moodOverrides, customPresets] = await Promise.all([
+    getMoodOverrides(),
+    getCustomPresets(),
+  ]);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -42,13 +48,16 @@ export default async function RootLayout({
           enableSystem={false}
         >
           <AdminProvider>
-            <AtmosphereProvider moodOverrides={moodOverrides}>
+            <AtmosphereProvider moodOverrides={moodOverrides} customPresets={customPresets}>
               {children}
               <FloatingNav />
             </AtmosphereProvider>
             <Toaster />
           </AdminProvider>
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
+        <PageViewTracker />
       </body>
     </html>
   );
